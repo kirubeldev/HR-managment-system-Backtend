@@ -1,0 +1,68 @@
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
+const { User, Role, Permission, RefreshToken } = require('../models');
+const emailService = require('./email.service');
+
+const generateAccessToken = (user) => {
+  const permissions = user.role.permissions.map(p => p.name);
+  return jwt.sign(
+    { userId: user.id, email: user.email, roleId: user.roleId, roleName: user.role.name, permissions },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
+  );
+};
+
+const generateRefreshToken = async (userId) => {
+  const token = crypto.randomBytes(40).toString('hex');
+  const expiresAt = new Date();
+  expiresAt.setHours(expiresAt.getHours() + parseInt(process.env.JWT_REFRESH_EXPIRES_IN || '24'));
+
+  await RefreshToken.create({ token, userId, expiresAt });
+  return token;
+};
+
+const login = async (email, password) => {
+  const user = await User.findOne({
+    where: { email, isDeleted: false },
+    include: [{ model: Role, as: 'role', include: [{ model: Permission, as: 'permissions' }] }],
+  });
+  if (!user || !user.isActive) throw Object.assign(new Error('Invalid credentials or account inactive'), { status: 401 });
+
+  const valid = await user.validatePassword(password);
+  if (!valid) throw Object.assign(new Error('Invalid credentials'), { status: 401 });
+
+  const accessToken = generateAccessToken(user);
+  const refreshToken = await generateRefreshToken(user.id);
+
+  return {
+    token: accessToken,
+    refreshToken,
+    user: { id: user.id, email: user.email, role: user.role.name, permissions: user.role.permissions.map(p => p.name) }
+  };
+};
+
+const refreshAccessToken = async (token) => {
+  const refreshToken = await RefreshToken.findOne({ where: { token }, include: [{ model: User, as: 'user', include: [{ model: Role, as: 'role', include: [{ model: Permission, as: 'permissions' }] }] }] });
+
+  if (!refreshToken || refreshToken.expiresAt < new Date() || !refreshToken.user || !refreshToken.user.isActive) {
+    throw Object.assign(new Error('Invalid or expired refresh token'), { status: 401 });
+  }
+
+  const accessToken = generateAccessToken(refreshToken.user);
+  return { token: accessToken };
+};
+
+const setPassword = async (token, newPassword) => {
+  const user = await User.findOne({ where: { resetToken: token, isDeleted: false } });
+  if (!user || !user.resetTokenExpiry || new Date() > user.resetTokenExpiry) {
+    throw Object.assign(new Error('Invalid or expired token'), { status: 400 });
+  }
+  const passwordHash = await bcrypt.hash(newPassword, 12);
+  await user.update({ passwordHash, resetToken: null, resetTokenExpiry: null, isActive: true });
+  return { message: 'Password set successfully. You can now log in.' };
+};
+
+const generateResetToken = () => crypto.randomBytes(32).toString('hex');
+
+module.exports = { login, setPassword, generateResetToken, refreshAccessToken };
