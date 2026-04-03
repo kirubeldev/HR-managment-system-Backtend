@@ -12,8 +12,7 @@ class StudentService {
             where,
             include: [
                 { model: Employee, as: 'teacher', attributes: ['id', 'firstName', 'lastName'] },
-                { model: TeachingProgram, as: 'programs', through: { attributes: [] } },
-                { model: LeaveRequest, as: 'leaveRequests' }
+                { model: TeachingProgram, as: 'programs', through: { attributes: [] } }
             ]
         });
     }
@@ -23,8 +22,7 @@ class StudentService {
             where: { id, isDeleted: false },
             include: [
                 { model: Employee, as: 'teacher', attributes: ['id', 'firstName', 'lastName'] },
-                { model: TeachingProgram, as: 'programs', through: { attributes: [] } },
-                { model: LeaveRequest, as: 'leaveRequests' }
+                { model: TeachingProgram, as: 'programs', through: { attributes: [] } }
             ]
         });
         if (!student) throw new Error('Student not found');
