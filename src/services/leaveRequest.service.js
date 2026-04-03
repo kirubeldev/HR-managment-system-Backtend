@@ -2,22 +2,19 @@ const { LeaveRequest, Student, Employee } = require('../models');
 
 class LeaveRequestService {
     async getAll(query = {}) {
-        const { status, studentId } = query;
+        const { status, employeeId } = query;
         const where = {};
 
         if (status) where.status = status;
-        if (studentId) where.studentId = studentId;
+        if (employeeId) where.employeeId = employeeId;
 
         return await LeaveRequest.findAll({
             where,
             include: [
                 { 
-                    model: Student, 
-                    as: 'student', 
-                    attributes: ['id', 'fullName', 'profileImageUrl'],
-                    include: [
-                        { model: Employee, as: 'teacher', attributes: ['id', 'firstName', 'lastName'] }
-                    ]
+                    model: Employee, 
+                    as: 'employee', 
+                    attributes: ['id', 'firstName', 'lastName', 'profileImageUrl', 'position']
                 }
             ],
             order: [['createdAt', 'DESC']]
@@ -28,12 +25,9 @@ class LeaveRequestService {
         const leave = await LeaveRequest.findByPk(id, {
             include: [
                 { 
-                    model: Student, 
-                    as: 'student', 
-                    attributes: ['id', 'fullName', 'profileImageUrl'],
-                    include: [
-                        { model: Employee, as: 'teacher', attributes: ['id', 'firstName', 'lastName'] }
-                    ]
+                    model: Employee, 
+                    as: 'employee', 
+                    attributes: ['id', 'firstName', 'lastName', 'profileImageUrl', 'position']
                 }
             ]
         });

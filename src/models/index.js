@@ -36,9 +36,9 @@ RefreshToken.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 Student.belongsTo(Employee, { foreignKey: 'teacherId', as: 'teacher' });
 Employee.hasMany(Student, { foreignKey: 'teacherId', as: 'students' });
 
-// Student <-> LeaveRequest
-Student.hasMany(LeaveRequest, { foreignKey: 'studentId', as: 'leaveRequests' });
-LeaveRequest.belongsTo(Student, { foreignKey: 'studentId', as: 'student' });
+// Employee <-> LeaveRequest
+Employee.hasMany(LeaveRequest, { foreignKey: 'employeeId', as: 'leaveRequests' });
+LeaveRequest.belongsTo(Employee, { foreignKey: 'employeeId', as: 'employee' });
 
 // Student <-> TeachingProgram (many-to-many)
 Student.belongsToMany(TeachingProgram, { through: 'student_programs', foreignKey: 'studentId', otherKey: 'programId', as: 'programs' });

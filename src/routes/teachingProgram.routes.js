@@ -22,7 +22,7 @@ router.use(authenticate);
  *       200:
  *         description: List of programs
  */
-router.get('/', requirePermission('view_employee'), ctrl.getAll);
+router.get('/', requirePermission('view_program'), ctrl.getAll);
 
 /**
  * @swagger
@@ -39,7 +39,7 @@ router.get('/', requirePermission('view_employee'), ctrl.getAll);
  *       200:
  *         description: Program details
  */
-router.get('/:id', requirePermission('view_employee'), ctrl.getById);
+router.get('/:id', requirePermission('view_program'), ctrl.getById);
 
 /**
  * @swagger
@@ -61,7 +61,7 @@ router.get('/:id', requirePermission('view_employee'), ctrl.getById);
  *       201:
  *         description: Program created
  */
-router.post('/', requirePermission('manage_employee'), ctrl.create);
+router.post('/', requirePermission('create_program'), ctrl.create);
 
 /**
  * @swagger
@@ -78,7 +78,7 @@ router.post('/', requirePermission('manage_employee'), ctrl.create);
  *       200:
  *         description: Program updated
  */
-router.put('/:id', requirePermission('manage_employee'), ctrl.update);
+router.put('/:id', requirePermission('edit_program'), ctrl.update);
 
 /**
  * @swagger
@@ -95,6 +95,6 @@ router.put('/:id', requirePermission('manage_employee'), ctrl.update);
  *       200:
  *         description: Program deleted
  */
-router.delete('/:id', requirePermission('manage_employee'), ctrl.delete);
+router.delete('/:id', requirePermission('delete_program'), ctrl.delete);
 
 module.exports = router;
