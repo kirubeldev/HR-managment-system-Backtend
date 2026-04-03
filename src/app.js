@@ -48,6 +48,7 @@ app.use('/api/dashboard', require('./routes/dashboard.routes'));
 app.use('/api/students', require('./routes/student.routes'));
 app.use('/api/teaching-programs', require('./routes/teachingProgram.routes'));
 app.use('/api/leaves', require('./routes/leaveRequest.routes'));
+app.use('/api/upload', require('./routes/upload.routes'));
 
 app.get('/health', (req, res) => res.json({ status: 'OK', timestamp: new Date() }));
 

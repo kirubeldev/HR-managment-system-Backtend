@@ -16,6 +16,7 @@ const Student = sequelize.define('Student', {
     registrationDate: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
     phoneNumber: { type: DataTypes.STRING },
     profileImageUrl: { type: DataTypes.STRING, allowNull: true },
+    documentUrl: { type: DataTypes.STRING, allowNull: true },
     teacherId: { type: DataTypes.UUID, allowNull: true },
     isDeleted: { type: DataTypes.BOOLEAN, defaultValue: false },
     deletedAt: { type: DataTypes.DATE, allowNull: true },
