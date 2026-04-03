@@ -23,4 +23,23 @@ const sendResetLink = async (to, token) => {
   console.log(`📧 Reset link sent to ${to}: ${link}`);
 };
 
-module.exports = { sendResetLink };
+const sendOTPEmail = async (to, otp) => {
+  await transporter.sendMail({
+    from: `"HRMS Admin" <${process.env.SMTP_USER}>`,
+    to,
+    subject: 'Password Reset OTP - HRMS',
+    html: `
+      <div style="font-family:sans-serif;max-width:500px;margin:auto">
+        <h2 style="color:#6366f1">Password Reset Request</h2>
+        <p>You requested a password reset. Use the OTP below to reset your password:</p>
+        <div style="background:#f3f4f6;padding:20px;border-radius:8px;text-align:center;margin:20px 0">
+          <span style="font-size:32px;font-weight:bold;letter-spacing:8px;color:#6366f1">${otp}</span>
+        </div>
+        <p style="color:#888;font-size:12px">This OTP expires in 15 minutes.</p>
+        <p style="color:#888;font-size:12px">If you didn't request this, please ignore this email.</p>
+      </div>`,
+  });
+  console.log(`📧 OTP sent to ${to}: ${otp}`);
+};
+
+module.exports = { sendResetLink, sendOTPEmail };

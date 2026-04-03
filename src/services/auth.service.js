@@ -65,4 +65,33 @@ const setPassword = async (token, newPassword) => {
 
 const generateResetToken = () => crypto.randomBytes(32).toString('hex');
 
-module.exports = { login, setPassword, generateResetToken, refreshAccessToken };
+const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
+
+const forgotPassword = async (email) => {
+  const user = await User.findOne({ where: { email, isDeleted: false } });
+  if (!user) throw Object.assign(new Error('User not found'), { status: 404 });
+
+  const otp = generateOTP();
+  const otpExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+  await user.update({ otp, otpExpiry });
+  await emailService.sendOTPEmail(email, otp);
+
+  return { message: 'OTP sent to your email. Please check your inbox.' };
+};
+
+const resetPassword = async (email, otp, newPassword) => {
+  const user = await User.findOne({ where: { email, isDeleted: false } });
+  if (!user) throw Object.assign(new Error('User not found'), { status: 404 });
+
+  if (user.otp !== otp || !user.otpExpiry || new Date() > user.otpExpiry) {
+    throw Object.assign(new Error('Invalid or expired OTP'), { status: 400 });
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, 12);
+  await user.update({ passwordHash, otp: null, otpExpiry: null });
+
+  return { message: 'Password reset successfully. You can now log in.' };
+};
+
+module.exports = { login, setPassword, generateResetToken, refreshAccessToken, forgotPassword, resetPassword };

@@ -11,6 +11,8 @@ const User = sequelize.define('User', {
   isActive: { type: DataTypes.BOOLEAN, defaultValue: false },
   resetToken: { type: DataTypes.STRING, allowNull: true },
   resetTokenExpiry: { type: DataTypes.DATE, allowNull: true },
+  otp: { type: DataTypes.STRING, allowNull: true },
+  otpExpiry: { type: DataTypes.DATE, allowNull: true },
   isDeleted: { type: DataTypes.BOOLEAN, defaultValue: false },
   deletedAt: { type: DataTypes.DATE, allowNull: true },
 }, { tableName: 'users', timestamps: true });

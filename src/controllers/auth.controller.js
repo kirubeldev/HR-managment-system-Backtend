@@ -1,5 +1,5 @@
 const authService = require('../services/auth.service');
-const { loginSchema, setPasswordSchema } = require('../validators/auth.validator');
+const { loginSchema, setPasswordSchema, forgotPasswordSchema, resetPasswordSchema } = require('../validators/auth.validator');
 
 const login = async (req, res, next) => {
   try {
@@ -28,4 +28,22 @@ const refresh = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { login, setPassword, refresh };
+const forgotPassword = async (req, res, next) => {
+  try {
+    const { error } = forgotPasswordSchema.validate(req.body);
+    if (error) return res.status(400).json({ success: false, message: error.details[0].message });
+    const result = await authService.forgotPassword(req.body.email);
+    res.json({ success: true, ...result });
+  } catch (err) { next(err); }
+};
+
+const resetPassword = async (req, res, next) => {
+  try {
+    const { error } = resetPasswordSchema.validate(req.body);
+    if (error) return res.status(400).json({ success: false, message: error.details[0].message });
+    const result = await authService.resetPassword(req.body.email, req.body.otp, req.body.password);
+    res.json({ success: true, ...result });
+  } catch (err) { next(err); }
+};
+
+module.exports = { login, setPassword, refresh, forgotPassword, resetPassword };
