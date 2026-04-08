@@ -3,7 +3,12 @@ const { createUserSchema, updateUserSchema } = require('../validators/user.valid
 
 const getAll = async (req, res, next) => {
   try {
-    const result = await userService.getAll(req.query);
+    const filters = { ...req.query };
+    // If not super admin, force branch filter
+    if (req.user && req.user.role && req.user.role.name !== 'Super Admin' && req.user.branch) {
+      filters.branch = req.user.branch;
+    }
+    const result = await userService.getAll(filters);
     res.json({ success: true, ...result });
   } catch (err) { next(err); }
 };

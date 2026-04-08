@@ -19,6 +19,7 @@ const createEmployeeSchema = Joi.object({
   address: Joi.string().allow(null, ''),
   emergencyContactName: Joi.string().allow(null, ''),
   emergencyContactPhone: Joi.string().allow(null, ''),
+  branch: Joi.string().valid('enkulal fabrica', 'bole center').allow(null, ''),
 });
 
 const updateEmployeeSchema = createEmployeeSchema.fork(

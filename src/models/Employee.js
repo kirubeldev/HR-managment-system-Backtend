@@ -32,6 +32,7 @@ const Employee = sequelize.define('Employee', {
   address: { type: DataTypes.TEXT, allowNull: true },
   emergencyContactName: { type: DataTypes.STRING, allowNull: true },
   emergencyContactPhone: { type: DataTypes.STRING, allowNull: true },
+  branch: { type: DataTypes.ENUM('enkulal fabrica', 'bole center'), allowNull: true },
   isDeleted: { type: DataTypes.BOOLEAN, defaultValue: false },
   deletedAt: { type: DataTypes.DATE, allowNull: true },
 }, { tableName: 'employees', timestamps: true });

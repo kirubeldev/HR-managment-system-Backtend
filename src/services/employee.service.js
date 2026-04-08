@@ -2,7 +2,7 @@ const { Employee, Department } = require('../models');
 const auditLogService = require('./auditLog.service');
 const { Op } = require('sequelize');
 
-const getAll = async ({ page = 1, limit = 10, search = '', status = '', departmentId = '' }) => {
+const getAll = async ({ page = 1, limit = 10, search = '', status = '', departmentId = '', branch = '' }) => {
   const offset = (page - 1) * limit;
   const where = { isDeleted: false };
   if (search) where[Op.or] = [
@@ -12,6 +12,7 @@ const getAll = async ({ page = 1, limit = 10, search = '', status = '', departme
   ];
   if (status) where.status = status;
   if (departmentId) where.departmentId = departmentId;
+  if (branch) where.branch = branch;
   const { count, rows } = await Employee.findAndCountAll({
     where, limit: Number(limit), offset,
     include: [{ model: Department, as: 'department', attributes: ['id', 'name'] }],

@@ -76,6 +76,18 @@ const PORT = process.env.PORT || 5000;
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Server: http://localhost:${PORT}`);
     console.log(`📚 Swagger: http://localhost:${PORT}/api-docs`);
+    
+    // WAKE-UP SCRIPT: Keep Render free tier awake by pinging itself every 5 minutes
+    setInterval(() => {
+      // You can replace this with your actual Render URL when deployed
+      const url = process.env.NODE_ENV === 'production' 
+        ? 'https://your-render-app.onrender.com/health' 
+        : `http://localhost:${PORT}/health`;
+        
+      fetch(url)
+        .then(res => console.log(`[Self-Ping] Health check status: ${res.status}`))
+        .catch(err => console.error(`[Self-Ping] Error: ${err.message}`));
+    }, 5 * 60 * 1000); // 5 minutes
   });
 })();
 

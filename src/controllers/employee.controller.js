@@ -2,7 +2,14 @@ const employeeService = require('../services/employee.service');
 const { createEmployeeSchema, updateEmployeeSchema, updateStatusSchema } = require('../validators/employee.validator');
 
 const getAll = async (req, res, next) => {
-  try { res.json({ success: true, ...(await employeeService.getAll(req.query)) }); } catch (err) { next(err); }
+  try {
+    const filters = { ...req.query };
+    // If not super admin, force branch filter to user's branch
+    if (req.user && req.user.role && req.user.role.name !== 'Super Admin' && req.user.branch) {
+      filters.branch = req.user.branch;
+    }
+    res.json({ success: true, ...(await employeeService.getAll(filters)) });
+  } catch (err) { next(err); }
 };
 const getById = async (req, res, next) => {
   try { res.json({ success: true, data: await employeeService.getById(req.params.id) }); } catch (err) { next(err); }

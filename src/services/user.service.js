@@ -5,10 +5,11 @@ const emailService = require('./email.service');
 const auditLogService = require('./auditLog.service');
 const { Op } = require('sequelize');
 
-const getAll = async ({ page = 1, limit = 10, search = '' }) => {
+const getAll = async ({ page = 1, limit = 10, search = '', branch = '' }) => {
   const offset = (page - 1) * limit;
   const where = { isDeleted: false };
   if (search) where.email = { [Op.iLike]: `%${search}%` };
+  if (branch) where.branch = branch;
   const { count, rows } = await User.findAndCountAll({
     where, limit: Number(limit), offset,
     include: [{ model: Role, as: 'role', attributes: ['id', 'name'] }],
@@ -33,6 +34,7 @@ const getById = async (id) => {
     name: user.name,
     roleId: user.roleId,
     role: user.role?.name,
+    branch: user.branch,
     permissions,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
@@ -40,7 +42,7 @@ const getById = async (id) => {
 };
 
 const create = async (data, actorId) => {
-  const { email, roleId, name } = data;
+  const { email, roleId, name, branch } = data;
   const existing = await User.findOne({ where: { email, isDeleted: false } });
   if (existing) throw Object.assign(new Error('Email already in use'), { status: 409 });
 
@@ -48,7 +50,7 @@ const create = async (data, actorId) => {
   const resetToken = authService.generateResetToken();
   const resetTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-  const user = await User.create({ email, name, passwordHash: tempPasswordHash, roleId, resetToken, resetTokenExpiry, isActive: false });
+  const user = await User.create({ email, name, passwordHash: tempPasswordHash, roleId, resetToken, resetTokenExpiry, isActive: false, branch });
   await emailService.sendResetLink(email, resetToken);
   await auditLogService.log(actorId, 'CREATE', 'user', user.id, { email });
   return { id: user.id, email: user.email, message: 'User created. Activation email sent.' };

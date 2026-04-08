@@ -42,4 +42,30 @@ const sendOTPEmail = async (to, otp) => {
   console.log(`📧 OTP sent to ${to}: ${otp}`);
 };
 
-module.exports = { sendResetLink, sendOTPEmail };
+const sendActivationEmail = async (to, activationToken) => {
+  // Use different URLs for development and production
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  const baseUrl = isDevelopment 
+    ? 'http://localhost:3000' 
+    : (process.env.FRONTEND_URL || 'https://hr-managment-system-frontend.vercel.app');
+  
+  const link = `${baseUrl}/activate?token=${activationToken}`;
+  
+  await transporter.sendMail({
+    from: `"HRMS Admin" <${process.env.SMTP_USER}>`,
+    to,
+    subject: 'Activate Your HRMS Account',
+    html: `
+      <div style="font-family:sans-serif;max-width:500px;margin:auto">
+        <h2 style="color:#6366f1">Welcome to HRMS</h2>
+        <p>Your administrator account has been created. Please click the button below to activate your account.</p>
+        <a href="${link}" style="display:inline-block;padding:12px 24px;background:#6366f1;color:#fff;border-radius:6px;text-decoration:none">Activate Account</a>
+        <p style="color:#888;font-size:12px;margin-top:20px">This activation link expires in 24 hours.</p>
+        <p style="color:#888;font-size:12px">Environment: ${isDevelopment ? 'Development' : 'Production'}</p>
+        <p style="color:#888;font-size:12px">If you didn't request this, please ignore this email.</p>
+      </div>`,
+  });
+  console.log(`📧 Activation email sent to ${to}: ${link}`);
+};
+
+module.exports = { sendResetLink, sendOTPEmail, sendActivationEmail };

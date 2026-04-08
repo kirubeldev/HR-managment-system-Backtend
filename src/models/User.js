@@ -13,6 +13,9 @@ const User = sequelize.define('User', {
   resetTokenExpiry: { type: DataTypes.DATE, allowNull: true },
   otp: { type: DataTypes.STRING, allowNull: true },
   otpExpiry: { type: DataTypes.DATE, allowNull: true },
+  activationToken: { type: DataTypes.STRING, allowNull: true },
+  activationTokenExpiry: { type: DataTypes.DATE, allowNull: true },
+  branch: { type: DataTypes.ENUM('enkulal fabrica', 'bole center'), allowNull: true },
   isDeleted: { type: DataTypes.BOOLEAN, defaultValue: false },
   deletedAt: { type: DataTypes.DATE, allowNull: true },
 }, { tableName: 'users', timestamps: true });
