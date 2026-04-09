@@ -7,6 +7,13 @@ const create = async (name, actorId) => {
   const existing = await Role.findOne({ where: { name, isDeleted: false } });
   if (existing) throw Object.assign(new Error('Role already exists'), { status: 409 });
   const role = await Role.create({ name });
+  
+  // Assign view_dashboard permission by default
+  const dashboardPerm = await Permission.findOne({ where: { name: 'view_dashboard' } });
+  if (dashboardPerm) {
+    await role.addPermission(dashboardPerm);
+  }
+
   await auditLogService.log(actorId, 'CREATE', 'role', role.id, { name });
   return role;
 };
