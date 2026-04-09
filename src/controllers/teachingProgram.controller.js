@@ -1,10 +1,18 @@
 const teachingProgramService = require('../services/teachingProgram.service');
 const auditLogService = require('../services/auditLog.service');
 
+const isAdmin = (user) => user?.role?.name?.toLowerCase() === 'administrator';
+
 class TeachingProgramController {
     async getAll(req, res, next) {
         try {
-            const programs = await teachingProgramService.getAll();
+            let branch = null;
+            if (isAdmin(req.user)) {
+                branch = req.query.branch || null; // Admin: optional filter
+            } else {
+                branch = req.user?.branch || null; // Non-admin: locked to their branch
+            }
+            const programs = await teachingProgramService.getAll(branch);
             res.json(programs);
         } catch (err) {
             next(err);

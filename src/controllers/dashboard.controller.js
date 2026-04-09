@@ -1,23 +1,37 @@
 const dashboardService = require('../services/dashboard.service');
 const analyticsService = require('../services/analytics.service');
 
+const isAdmin = (user) => user?.role?.name?.toLowerCase() === 'administrator';
+
+const getBranchFilter = (req) => {
+    if (isAdmin(req.user)) {
+        // Admin can optionally filter by branch via query param, or see all
+        return req.query.branch || null;
+    }
+    // Non-admin always sees only their own branch
+    return req.user?.branch || null;
+};
+
 const getSummary = async (req, res, next) => {
     try {
-        const data = await dashboardService.getSummary();
-        res.json({ success: true, data });
+        const branch = getBranchFilter(req);
+        const data = await dashboardService.getSummary(branch);
+        res.json({ success: true, data, branch: branch || 'all' });
     } catch (err) { next(err); }
 };
 
 const getEmployeeByDepartment = async (req, res, next) => {
     try {
-        const data = await analyticsService.getDepartmentDistribution();
+        const branch = getBranchFilter(req);
+        const data = await analyticsService.getDepartmentDistribution(branch);
         res.json({ success: true, data });
     } catch (err) { next(err); }
 };
 
 const getEmployeeStatus = async (req, res, next) => {
     try {
-        const data = await dashboardService.getEmployeeStatusDistribution();
+        const branch = getBranchFilter(req);
+        const data = await dashboardService.getEmployeeStatusDistribution(branch);
         res.json({ success: true, data });
     } catch (err) { next(err); }
 };
@@ -25,7 +39,8 @@ const getEmployeeStatus = async (req, res, next) => {
 const getHiringTrend = async (req, res, next) => {
     try {
         const year = req.query.year ? parseInt(req.query.year, 10) : new Date().getFullYear();
-        const data = await analyticsService.getHiringTrends(year);
+        const branch = getBranchFilter(req);
+        const data = await analyticsService.getHiringTrends(year, branch);
         res.json({ success: true, data });
     } catch (err) { next(err); }
 };

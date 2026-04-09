@@ -1,10 +1,18 @@
 const studentService = require('../services/student.service');
 const auditLogService = require('../services/auditLog.service');
 
+const isAdmin = (user) => user?.role?.name?.toLowerCase() === 'administrator';
+
 class StudentController {
     async getAll(req, res, next) {
         try {
-            const students = await studentService.getAll(req.query);
+            const query = { ...req.query };
+            // Non-admin: locked to their branch
+            if (!isAdmin(req.user)) {
+                query.branch = req.user?.branch || null;
+            }
+            // Admin: can pass ?branch= or see all (no override)
+            const students = await studentService.getAll(query);
             res.json(students);
         } catch (err) {
             next(err);

@@ -20,7 +20,6 @@ const Employee = sequelize.define('Employee', {
       }
     }
   },
-  salary: { type: DataTypes.DECIMAL(15, 2), allowNull: true },
   status: { type: DataTypes.ENUM('active', 'inactive', 'terminated', 'leave'), defaultValue: 'active' },
   profileImageUrl: { type: DataTypes.TEXT, allowNull: true },
   cvUrl: { type: DataTypes.TEXT, allowNull: true },

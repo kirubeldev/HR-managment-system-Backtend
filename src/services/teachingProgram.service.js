@@ -1,8 +1,10 @@
 const { TeachingProgram } = require('../models');
 
 class TeachingProgramService {
-    async getAll() {
-        return await TeachingProgram.findAll({ where: { isDeleted: false } });
+    async getAll(branch = null) {
+        const where = { isDeleted: false };
+        if (branch) where.branch = branch;
+        return await TeachingProgram.findAll({ where, order: [['createdAt', 'DESC']] });
     }
 
     async getById(id) {

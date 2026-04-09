@@ -8,7 +8,6 @@ const createEmployeeSchema = Joi.object({
   position: Joi.string().required(),
   departmentId: Joi.string().uuid().allow(null, ''),
   hireDate: Joi.string().isoDate().required(),
-  salary: Joi.number().allow(null),
   profileImageUrl: Joi.string().uri().allow(null, ''),
   cvUrl: Joi.string().uri().allow(null, ''),
   idDocumentUrl: Joi.string().uri().allow(null, ''),

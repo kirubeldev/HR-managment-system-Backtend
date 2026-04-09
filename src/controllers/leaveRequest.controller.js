@@ -1,9 +1,16 @@
 const LeaveRequestService = require('../services/leaveRequest.service');
 
+const isAdmin = (user) => user?.role?.name?.toLowerCase() === 'administrator';
+
 class LeaveRequestController {
     async getAll(req, res, next) {
         try {
-            const leaves = await LeaveRequestService.getAll(req.query);
+            const query = { ...req.query };
+            if (!isAdmin(req.user)) {
+                query.branch = req.user?.branch || null;
+            }
+            // Admin: can pass ?branch= or see all (no override)
+            const leaves = await LeaveRequestService.getAll(query);
             res.status(200).json({ success: true, data: leaves });
         } catch (error) {
             next(error);

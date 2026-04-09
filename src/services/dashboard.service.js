@@ -1,7 +1,19 @@
 const { Employee, Department, User, Role, AuditLog, Student, TeachingProgram, LeaveRequest, sequelize } = require('../models');
 const { Op } = require('sequelize');
 
-const getSummary = async () => {
+const getSummary = async (branch = null) => {
+    const employeeWhere = { isDeleted: false };
+    const studentWhere = { isDeleted: false };
+    const programWhere = { isDeleted: false };
+    const leaveWhere = { status: 'Pending' };
+
+    if (branch) {
+        employeeWhere.branch = branch;
+        studentWhere.branch = branch;
+        programWhere.branch = branch;
+        leaveWhere.branch = branch;
+    }
+
     const [
         totalEmployees,
         activeEmployees,
@@ -13,15 +25,15 @@ const getSummary = async () => {
         totalPrograms,
         pendingLeaves
     ] = await Promise.all([
-        Employee.count({ where: { isDeleted: false } }),
-        Employee.count({ where: { isDeleted: false, status: 'active' } }),
-        Employee.count({ where: { isDeleted: false, status: { [Op.ne]: 'active' } } }),
+        Employee.count({ where: employeeWhere }),
+        Employee.count({ where: { ...employeeWhere, status: 'active' } }),
+        Employee.count({ where: { ...employeeWhere, status: { [Op.ne]: 'active' } } }),
         Department.count({ where: { isDeleted: false } }),
         User.count({ where: { isDeleted: false } }),
         Role.count({ where: { isDeleted: false } }),
-        Student.count({ where: { isDeleted: false } }),
-        TeachingProgram.count({ where: { isDeleted: false } }),
-        LeaveRequest.count({ where: { status: 'Pending' } })
+        Student.count({ where: studentWhere }),
+        TeachingProgram.count({ where: programWhere }),
+        LeaveRequest.count({ where: leaveWhere })
     ]);
 
     return {
@@ -35,13 +47,16 @@ const getSummary = async () => {
     };
 };
 
-const getEmployeeStatusDistribution = async () => {
+const getEmployeeStatusDistribution = async (branch = null) => {
+    const where = { isDeleted: false };
+    if (branch) where.branch = branch;
+
     const distribution = await Employee.findAll({
         attributes: [
             'status',
             [sequelize.fn('COUNT', sequelize.col('id')), 'count']
         ],
-        where: { isDeleted: false },
+        where,
         group: ['status'],
         raw: true
     });

@@ -1,19 +1,26 @@
 const { Student, TeachingProgram, Employee, LeaveRequest } = require('../models');
+const { Op } = require('sequelize');
 
 class StudentService {
     async getAll(query = {}) {
-        const { search } = query;
+        const { search, branch } = query;
         const where = { isDeleted: false };
 
-        // Simple search implementation
-        // if (search) { ... }
+        if (search) {
+            where[Op.or] = [
+                { fullName: { [Op.iLike]: `%${search}%` } },
+                { phoneNumber: { [Op.iLike]: `%${search}%` } },
+            ];
+        }
+        if (branch) where.branch = branch;
 
         return await Student.findAll({
             where,
             include: [
                 { model: Employee, as: 'teacher', attributes: ['id', 'firstName', 'lastName'] },
                 { model: TeachingProgram, as: 'programs', through: { attributes: [] } }
-            ]
+            ],
+            order: [['createdAt', 'DESC']]
         });
     }
 
@@ -32,24 +39,19 @@ class StudentService {
     async create(data) {
         const { programIds, ...studentData } = data;
         const student = await Student.create(studentData);
-
         if (programIds && programIds.length > 0) {
             await student.setPrograms(programIds);
         }
-
         return await this.getById(student.id);
     }
 
     async update(id, data) {
         const { programIds, ...studentData } = data;
         const student = await this.getById(id);
-
         await student.update(studentData);
-
         if (programIds !== undefined) {
             await student.setPrograms(programIds);
         }
-
         return await this.getById(id);
     }
 

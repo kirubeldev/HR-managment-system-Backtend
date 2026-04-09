@@ -20,6 +20,7 @@ const LeaveRequest = sequelize.define('LeaveRequest', {
     },
     supervisorName: { type: DataTypes.STRING },
     supervisorComment: { type: DataTypes.TEXT },
+    branch: { type: DataTypes.ENUM('enkulal fabrica', 'bole center'), allowNull: true },
 }, { tableName: 'leave_requests', timestamps: true });
 
 module.exports = LeaveRequest;
