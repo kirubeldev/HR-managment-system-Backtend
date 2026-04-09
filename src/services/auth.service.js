@@ -27,7 +27,8 @@ const login = async (email, password) => {
     where: { email, isDeleted: false },
     include: [{ model: Role, as: 'role', include: [{ model: Permission, as: 'permissions' }] }],
   });
-  if (!user || !user.isActive) throw Object.assign(new Error('Invalid credentials or account inactive'), { status: 401 });
+  if (!user) throw Object.assign(new Error('Invalid credentials'), { status: 401 });
+  if (!user.isActive) throw Object.assign(new Error('Account not activated. Please check your email or use the activation link.'), { status: 403 });
 
   const valid = await user.validatePassword(password);
   if (!valid) throw Object.assign(new Error('Invalid credentials'), { status: 401 });
@@ -94,4 +95,4 @@ const resetPassword = async (email, otp, newPassword) => {
   return { message: 'Password reset successfully. You can now log in.' };
 };
 
-module.exports = { login, setPassword, generateResetToken, refreshAccessToken, forgotPassword, resetPassword };
+module.exports = { login, setPassword, generateResetToken, refreshAccessToken, forgotPassword, resetPassword, generateAccessToken, generateRefreshToken };
