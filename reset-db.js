@@ -22,7 +22,7 @@ async function dropAllAndMigrate() {
     
     console.log('✅ All tables dropped. Now ready for fresh migration.');
   } catch (err) {
-    console.error('❌ Drop failed:', err.message);
+    console.log('❌ Drop failed:', err.message);
   } finally {
     process.exit();
   }

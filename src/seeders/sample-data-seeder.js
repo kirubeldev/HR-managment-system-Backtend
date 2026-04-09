@@ -89,7 +89,7 @@ async function seed() {
         console.log('✅ Students & Leave Requests seeded');
         console.log('🎉 Seeding completed successfully!');
     } catch (err) {
-        console.error('❌ Seeding failed:', err);
+        console.log('❌ Seeding failed:', err);
     } finally {
         process.exit();
     }

@@ -39,7 +39,7 @@ async function runTests() {
 
     // 1. Auth
     const loginRes = await testApi('Login', '/auth/login', 'POST', { email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
-    if (!loginRes) return console.error('Aborting: Login failed');
+    if (!loginRes) return console.log('Aborting: Login failed');
     token = loginRes.token;
 
     await testApi('Get Profile', '/users/me');

@@ -7,7 +7,7 @@ async function sync() {
         console.log('Database synced successfully');
         process.exit(0);
     } catch (err) {
-        console.error('Database sync failed:', err);
+        console.log('Database sync failed:', err);
         process.exit(1);
     }
 }

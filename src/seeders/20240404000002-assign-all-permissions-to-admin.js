@@ -54,7 +54,7 @@ module.exports = {
       
     } catch (error) {
       await transaction.rollback();
-      console.error('Error assigning permissions:', error.message);
+      console.log('Error assigning permissions:', error.message);
       throw error;
     }
   },

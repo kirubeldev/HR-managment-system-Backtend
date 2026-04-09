@@ -22,7 +22,7 @@ const login = async (req, res, next) => {
     });
     
   } catch (err) {
-    console.error('Login error:', err.message);
+    console.log('Login error:', err.message);
     res.status(err.status || 500).json({ 
       success: false, 
       message: err.message || 'Server error during login'
@@ -86,7 +86,7 @@ const bootstrapAdmin = async (req, res, next) => {
       await sendActivationEmail(user.email, activationToken);
       console.log(`📧 Activation email sent successfully to: ${user.email}`);
     } catch (emailErr) {
-      console.error('📧 Error sending activation email:', emailErr.message);
+      console.log('📧 Error sending activation email:', emailErr.message);
       // We continue because the link is still returned in the response for direct use
     }
 
@@ -98,7 +98,7 @@ const bootstrapAdmin = async (req, res, next) => {
       role: role.name
     });
   } catch (err) { 
-    console.error('Bootstrap error:', err.message);
+    console.log('Bootstrap error:', err.message);
     
     // Consolidate errors into a single message for the frontend toast
     const errorDetails = err.errors ? err.errors.map(e => e.message).join('. ') : err.message;

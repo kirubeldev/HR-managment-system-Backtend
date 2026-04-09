@@ -52,8 +52,8 @@ async function finalRoleFix() {
 
     console.log('--- ALL SYSTEMS SYNCED ---');
   } catch (err) {
-    console.error('❌ Fix failed:', err.message);
-    if (err.errors) console.error(err.errors.map(e => e.message).join(', '));
+    console.log('❌ Fix failed:', err.message);
+    if (err.errors) console.log(err.errors.map(e => e.message).join(', '));
   } finally {
     process.exit();
   }

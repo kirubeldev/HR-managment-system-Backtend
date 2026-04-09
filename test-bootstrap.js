@@ -57,7 +57,7 @@ app.post('/test-bootstrap', async (req, res) => {
     });
     
   } catch (err) {
-    console.error('Error:', err);
+    console.log('Error:', err);
     res.status(500).json({ 
       success: false, 
       message: err.message,

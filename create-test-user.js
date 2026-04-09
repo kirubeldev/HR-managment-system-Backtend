@@ -21,8 +21,8 @@ async function createUser() {
     console.log(`Using role: ${role.name} (${role.id})`);
     await performCreate(role);
   } catch (err) {
-    console.error('❌ Creation failed:', err.message);
-    if (err.errors) console.error(err.errors.map(e => e.message).join(', '));
+    console.log('❌ Creation failed:', err.message);
+    if (err.errors) console.log(err.errors.map(e => e.message).join(', '));
   } finally {
     process.exit();
   }

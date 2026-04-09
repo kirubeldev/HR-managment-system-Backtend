@@ -13,7 +13,7 @@ async function addActivationColumns() {
     console.log('Activation columns added successfully');
     process.exit(0);
   } catch (err) {
-    console.error('Error:', err);
+    console.log('Error:', err);
     process.exit(1);
   }
 }

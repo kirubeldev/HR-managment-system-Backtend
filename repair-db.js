@@ -7,14 +7,14 @@ async function repair() {
         console.log('Database synced successfully with alter: true');
         process.exit(0);
     } catch (err) {
-        console.error('Repair failed:', err);
+        console.log('Repair failed:', err);
         process.exit(1);
     }
 }
 
 // Set a timeout of 30 seconds
 setTimeout(() => {
-    console.error('Repair timed out');
+    console.log('Repair timed out');
     process.exit(1);
 }, 30000);
 

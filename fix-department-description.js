@@ -7,7 +7,7 @@ async function fixDepartmentSchema() {
     console.log('✅ Success!');
     process.exit(0);
   } catch (err) {
-    console.error('❌ Failed:', err.message);
+    console.log('❌ Failed:', err.message);
     process.exit(1);
   }
 }

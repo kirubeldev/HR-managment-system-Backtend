@@ -11,14 +11,14 @@ async function forceRecreate() {
         console.log('Database synced successfully');
         process.exit(0);
     } catch (err) {
-        console.error('Force recreate failed:', err);
+        console.log('Force recreate failed:', err);
         process.exit(1);
     }
 }
 
 // Set a timeout of 30 seconds
 setTimeout(() => {
-    console.error('Force recreate timed out');
+    console.log('Force recreate timed out');
     process.exit(1);
 }, 30000);
 

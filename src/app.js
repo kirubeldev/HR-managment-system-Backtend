@@ -57,7 +57,7 @@ app.use((req, res) => res.status(404).json({ success: false, message: 'Route not
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.error(err.stack || err.message);
+  console.log(err.stack || err.message);
   res.status(err.status || 500).json({ success: false, message: err.message || 'Internal Server Error' });
 });
 
@@ -68,7 +68,7 @@ const PORT = process.env.PORT || 5000;
     await sequelize.authenticate();
     console.log('✅ Database connected');
   } catch (err) {
-    console.error('❌ DB connection failed:', err.message);
+    console.log('❌ DB connection failed:', err.message);
     // Don't exit process in development, allow server to start for health check/debugging
     if (process.env.NODE_ENV === 'production') process.exit(1);
   }
@@ -86,7 +86,7 @@ const PORT = process.env.PORT || 5000;
         
       fetch(url)
         .then(res => console.log(`[Self-Ping] Health check status: ${res.status}`))
-        .catch(err => console.error(`[Self-Ping] Error: ${err.message}`));
+        .catch(err => console.log(`[Self-Ping] Error: ${err.message}`));
     }, 5 * 60 * 1000); // 5 minutes
   });
 })();

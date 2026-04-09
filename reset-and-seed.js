@@ -123,7 +123,7 @@ async function resetAndSeed() {
     
     process.exit(0);
   } catch (err) {
-    console.error('❌ Error during reset and seed:', err);
+    console.log('❌ Error during reset and seed:', err);
     process.exit(1);
   }
 }

@@ -23,7 +23,7 @@ async function syncUsersTable() {
 
     console.log('--- User table sync attempt completed ---');
   } catch (err) {
-    console.error('❌ Critical error during User sync:', err.message);
+    console.log('❌ Critical error during User sync:', err.message);
   } finally {
     process.exit();
   }

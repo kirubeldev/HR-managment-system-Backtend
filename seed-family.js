@@ -67,7 +67,7 @@ const seedFamilyData = async () => {
         console.log('Successfully seeded family students.');
         process.exit(0);
     } catch (error) {
-        console.error('Failed to seed data:', error);
+        console.log('Failed to seed data:', error);
         process.exit(1);
     }
 };

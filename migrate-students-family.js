@@ -70,7 +70,7 @@ async function migrate() {
 
         console.log('Migration completed successfully!');
     } catch (err) {
-        console.error('Migration failed:', err);
+        console.log('Migration failed:', err);
     }
     process.exit(0);
 }

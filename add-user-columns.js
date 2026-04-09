@@ -18,7 +18,7 @@ async function addColumns() {
       if (e.message.includes('already exists')) {
         console.log(`ℹ️ Column ${col} already exists.`);
       } else {
-        console.error(`❌ Error adding column ${col}:`, e.message);
+        console.log(`❌ Error adding column ${col}:`, e.message);
       }
     }
   }

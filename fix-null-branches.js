@@ -34,11 +34,11 @@ async function fixData() {
         console.log(`✓ Updated ${leaveCount} leave requests`);
 
     } catch (e) {
-        console.error('Failed to fix data:', e);
+        console.log('Failed to fix data:', e);
     }
 
     console.log('\nData fix complete!');
     process.exit(0);
 }
 
-fixData().catch(e => { console.error(e); process.exit(1); });
+fixData().catch(e => { console.log(e); process.exit(1); });

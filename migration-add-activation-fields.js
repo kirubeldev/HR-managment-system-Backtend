@@ -13,7 +13,7 @@ async function addActivationFields() {
     console.log('Activation fields added successfully');
     process.exit(0);
   } catch (err) {
-    console.error('Error:', err);
+    console.log('Error:', err);
     process.exit(1);
   }
 }

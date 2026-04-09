@@ -28,7 +28,7 @@ async function updateAdmin() {
             console.log(`✅ Admin user created with: ${email}`);
         }
     } catch (err) {
-        console.error('❌ Error updating admin:', err.message);
+        console.log('❌ Error updating admin:', err.message);
     } finally {
         process.exit();
     }

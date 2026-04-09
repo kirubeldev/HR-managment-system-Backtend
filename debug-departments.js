@@ -8,7 +8,7 @@ async function debugDepartments() {
     console.log('Total:', depts.length);
     process.exit(0);
   } catch (err) {
-    console.error(err);
+    console.log(err);
     process.exit(1);
   }
 }

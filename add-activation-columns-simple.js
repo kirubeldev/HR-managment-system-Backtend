@@ -14,7 +14,7 @@ async function addActivationColumns() {
     console.log('Activation columns added successfully');
     process.exit(0);
   } catch (err) {
-    console.error('Error adding columns:', err.message);
+    console.log('Error adding columns:', err.message);
     process.exit(1);
   }
 }

@@ -24,7 +24,7 @@ async function fixPermissions() {
 
     console.log('--- Permission fix completed ---');
   } catch (err) {
-    console.error('❌ Permission fix failed:', err.message);
+    console.log('❌ Permission fix failed:', err.message);
   } finally {
     process.exit();
   }

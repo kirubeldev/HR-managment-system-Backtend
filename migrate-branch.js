@@ -47,4 +47,4 @@ async function migrate() {
     process.exit(0);
 }
 
-migrate().catch(e => { console.error('Migration failed:', e); process.exit(1); });
+migrate().catch(e => { console.log('Migration failed:', e); process.exit(1); });

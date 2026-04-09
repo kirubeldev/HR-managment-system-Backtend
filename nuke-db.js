@@ -10,14 +10,14 @@ async function nuke() {
         console.log('Database nuked.');
         process.exit(0);
     } catch (err) {
-        console.error('Nuke failed:', err);
+        console.log('Nuke failed:', err);
         process.exit(1);
     }
 }
 
 // Set a timeout of 30 seconds
 setTimeout(() => {
-    console.error('Nuke timed out');
+    console.log('Nuke timed out');
     process.exit(1);
 }, 30000);
 

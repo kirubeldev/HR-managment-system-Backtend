@@ -14,7 +14,7 @@ async function check() {
             console.log('NOT FOUND in DB at all.');
         }
     } catch (err) {
-        console.error('Error:', err);
+        console.log('Error:', err);
     } finally {
         process.exit();
     }

@@ -161,7 +161,7 @@ module.exports = {
       
     } catch (error) {
       await transaction.rollback();
-      console.error('Migration failed:', error);
+      console.log('Migration failed:', error);
       throw error;
     }
   },

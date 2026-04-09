@@ -7,7 +7,7 @@ async function check() {
         console.log(JSON.stringify(users, null, 2));
         process.exit(0);
     } catch (err) {
-        console.error('Check failed:', err);
+        console.log('Check failed:', err);
         process.exit(1);
     }
 }

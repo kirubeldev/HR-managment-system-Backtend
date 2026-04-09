@@ -41,7 +41,7 @@ async function addLeavePermissions() {
 
     console.log('--- Done ---');
   } catch (err) {
-    console.error('❌ Error:', err.message);
+    console.log('❌ Error:', err.message);
   } finally {
     process.exit();
   }

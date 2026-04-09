@@ -37,7 +37,7 @@ async function seedAdmin() {
 
     console.log(`✅ Admin user ${email} is ready.`);
   } catch (err) {
-    console.error('❌ Seeding failed:', err.message);
+    console.log('❌ Seeding failed:', err.message);
   } finally {
     process.exit();
   }

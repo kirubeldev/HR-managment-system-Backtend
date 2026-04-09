@@ -23,7 +23,7 @@ async function fixDatabase() {
 
     console.log('--- Database fix attempt completed ---');
   } catch (err) {
-    console.error('❌ Critical error during DB fix:', err.message);
+    console.log('❌ Critical error during DB fix:', err.message);
   } finally {
     process.exit();
   }

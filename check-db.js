@@ -5,7 +5,7 @@ const { User } = require('./src/models');
     console.log('✅ Found user:', user ? user.email : 'None');
     console.log('✅ Branch column exists');
   } catch (err) {
-    console.error('❌ Error accessing User table:', err.message);
+    console.log('❌ Error accessing User table:', err.message);
   }
   process.exit();
 })();

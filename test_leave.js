@@ -24,7 +24,7 @@ const { Student, LeaveRequest, sequelize } = require('./src/models');
         console.log('Dummy leave request created:', leave.id);
         process.exit(0);
     } catch (error) {
-        console.error('Error:', error);
+        console.log('Error:', error);
         process.exit(1);
     }
 })();
