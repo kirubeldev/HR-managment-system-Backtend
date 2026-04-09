@@ -76,7 +76,13 @@ const forgotPassword = async (email) => {
   const otpExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
 
   await user.update({ otp, otpExpiry });
-  await emailService.sendOTPEmail(email, otp);
+
+  try {
+    await emailService.sendOTPEmail(email, otp);
+  } catch (err) {
+    console.log('📧 Password Reset Email Error:', err.message);
+    throw Object.assign(new Error('User found and OTP generated, but email service is currently unavailable. Please contact support or try again later.'), { status: 503 });
+  }
 
   return { message: 'OTP sent to your email. Please check your inbox.' };
 };

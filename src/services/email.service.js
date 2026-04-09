@@ -4,6 +4,17 @@ const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT) || 587,
   auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+  connectionTimeout: 5000, // 5 seconds
+  greetingTimeout: 5000,   // 5 seconds
+  socketTimeout: 5000      // 5 seconds
+});
+
+transporter.verify((error, success) => {
+  if (error) {
+    console.log('📧 SMTP Connection Error:', error.message);
+  } else {
+    console.log('📧 SMTP Server is ready to take our messages');
+  }
 });
 
 const sendResetLink = async (to, token) => {
