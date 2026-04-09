@@ -1,13 +1,20 @@
 const { LeaveRequest, Employee } = require('../models');
+const { generateDisplayId } = require('../utils/idGenerator');
 const { Op } = require('sequelize');
 
 class LeaveRequestService {
     async getAll(query = {}) {
-        const { status, employeeId, branch } = query;
+        const { status, employeeId, branch, search } = query;
         const where = {};
 
         if (status) where.status = status;
         if (employeeId) where.employeeId = employeeId;
+        if (search) {
+            where[Op.or] = [
+                { displayId: { [Op.iLike]: `%${search}%` } },
+                { reason: { [Op.iLike]: `%${search}%` } }
+            ];
+        }
         
         const includeOptions = [
             {
@@ -60,7 +67,11 @@ class LeaveRequestService {
     async create(data) {
         const employee = await Employee.findByPk(data.employeeId);
         const branch = employee ? employee.branch : null;
-        return await LeaveRequest.create({ ...data, branch });
+        
+        // Generate unique display ID
+        const displayId = await generateDisplayId('LEAVE');
+        
+        return await LeaveRequest.create({ ...data, branch, displayId });
     }
 
     async updateStatus(id, { status, supervisorComment, supervisorName }) {

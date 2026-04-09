@@ -3,6 +3,7 @@ const sequelize = require('../config/database');
 
 const LeaveRequest = sequelize.define('LeaveRequest', {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    displayId: { type: DataTypes.STRING, allowNull: true, unique: true, field: 'displayid' }, // e.g., LEA001
     employeeId: { type: DataTypes.UUID, allowNull: false },
     leaveType: {
         type: DataTypes.ENUM('Annual', 'Sick', 'Maternity', 'Paternity', 'Emergency', 'Other'),

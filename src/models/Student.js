@@ -3,7 +3,8 @@ const sequelize = require('../config/database');
 
 const Student = sequelize.define('Student', {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
-    type: { type: DataTypes.ENUM('trainee', 'family'), defaultValue: 'trainee' },
+    displayId: { type: DataTypes.STRING, allowNull: true, unique: true, field: 'displayid' }, // e.g., STU001
+    type: { type: DataTypes.ENUM('trainee', 'child'), defaultValue: 'trainee' },
     
     // Core Fields (Mainly for Trainee)
     fullName: { type: DataTypes.STRING, allowNull: true },

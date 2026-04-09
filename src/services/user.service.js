@@ -3,12 +3,18 @@ const { User, Role, Permission } = require('../models');
 const authService = require('./auth.service');
 const emailService = require('./email.service');
 const auditLogService = require('./auditLog.service');
+const { generateDisplayId } = require('../utils/idGenerator');
 const { Op } = require('sequelize');
 
 const getAll = async ({ page = 1, limit = 10, search = '', branch = '', roleId = '', isActive = '' }) => {
   const offset = (page - 1) * limit;
   const where = { isDeleted: false };
-  if (search) where.email = { [Op.iLike]: `%${search}%` };
+  if (search) {
+    where[Op.or] = [
+      { email: { [Op.iLike]: `%${search}%` } },
+      { displayId: { [Op.iLike]: `%${search}%` } }
+    ];
+  }
   if (branch) where.branch = branch;
   if (roleId) where.roleId = roleId;
   if (isActive !== '') where.isActive = isActive === 'true';
@@ -48,14 +54,17 @@ const create = async (data, actorId) => {
   const existing = await User.findOne({ where: { email, isDeleted: false } });
   if (existing) throw Object.assign(new Error('Email already in use'), { status: 409 });
 
+  // Generate unique display ID
+  const displayId = await generateDisplayId('USER');
+
   const tempPasswordHash = await bcrypt.hash('Temp@' + Date.now(), 12);
   const resetToken = authService.generateResetToken();
   const resetTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-  const user = await User.create({ email, name, passwordHash: tempPasswordHash, roleId, resetToken, resetTokenExpiry, isActive: false, branch });
+  const user = await User.create({ email, name, displayId, passwordHash: tempPasswordHash, roleId, resetToken, resetTokenExpiry, isActive: false, branch });
   await emailService.sendResetLink(email, resetToken);
-  await auditLogService.log(actorId, 'CREATE', 'user', user.id, { email });
-  return { id: user.id, email: user.email, message: 'User created. Activation email sent.' };
+  await auditLogService.log(actorId, 'CREATE', 'user', user.id, { email, displayId });
+  return { id: user.id, email: user.email, displayId: user.displayId, message: 'User created. Activation email sent.' };
 };
 
 const update = async (id, data, actorId) => {

@@ -1,5 +1,6 @@
 const { Employee, Department } = require('../models');
 const auditLogService = require('./auditLog.service');
+const { generateDisplayId } = require('../utils/idGenerator');
 const { Op } = require('sequelize');
 
 const getAll = async ({ page = 1, limit = 10, search = '', status = '', departmentId = '', branch = '', gender = '' }) => {
@@ -9,6 +10,7 @@ const getAll = async ({ page = 1, limit = 10, search = '', status = '', departme
     { firstName: { [Op.iLike]: `%${search}%` } },
     { lastName: { [Op.iLike]: `%${search}%` } },
     { email: { [Op.iLike]: `%${search}%` } },
+    { displayId: { [Op.iLike]: `%${search}%` } },
   ];
   if (status) where.status = status;
   if (departmentId) where.departmentId = departmentId;
@@ -31,8 +33,12 @@ const getById = async (id) => {
 const create = async (data, actorId) => {
   const existing = await Employee.findOne({ where: { email: data.email, isDeleted: false } });
   if (existing) throw Object.assign(new Error('Email already in use'), { status: 409 });
-  const emp = await Employee.create(data);
-  await auditLogService.log(actorId, 'CREATE', 'employee', emp.id, { email: data.email });
+  
+  // Generate unique display ID
+  const displayId = await generateDisplayId('EMPLOYEE');
+  
+  const emp = await Employee.create({ ...data, displayId });
+  await auditLogService.log(actorId, 'CREATE', 'employee', emp.id, { email: data.email, displayId });
   return emp;
 };
 

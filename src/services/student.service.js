@@ -1,4 +1,5 @@
 const { Student, TeachingProgram, Employee, LeaveRequest } = require('../models');
+const { generateDisplayId } = require('../utils/idGenerator');
 const { Op } = require('sequelize');
 
 class StudentService {
@@ -12,6 +13,7 @@ class StudentService {
                 { firstName: { [Op.iLike]: `%${search}%` } },
                 { lastName: { [Op.iLike]: `%${search}%` } },
                 { phoneNumber: { [Op.iLike]: `%${search}%` } },
+                { displayId: { [Op.iLike]: `%${search}%` } },
             ];
         }
         if (branch) where.branch = branch;
@@ -44,7 +46,11 @@ class StudentService {
 
     async create(data) {
         const { programIds, ...studentData } = data;
-        const student = await Student.create(studentData);
+        
+        // Generate unique display ID
+        const displayId = await generateDisplayId('STUDENT');
+        
+        const student = await Student.create({ ...studentData, displayId });
         if (programIds && programIds.length > 0) {
             await student.setPrograms(programIds);
         }
