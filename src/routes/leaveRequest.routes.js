@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const LeaveRequestController = require('../controllers/leaveRequest.controller');
+const { authenticate } = require('../middleware/auth');
+
+router.use(authenticate);
 
 router.get('/', LeaveRequestController.getAll);
 router.post('/', LeaveRequestController.create);

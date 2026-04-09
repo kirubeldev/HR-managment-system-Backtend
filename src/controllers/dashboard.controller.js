@@ -59,11 +59,57 @@ const getRecentLogs = async (req, res, next) => {
     } catch (err) { next(err); }
 };
 
+// New controller methods for additional charts
+const getStudentAgeDistribution = async (req, res, next) => {
+    try {
+        const branch = getBranchFilter(req);
+        const data = await dashboardService.getStudentAgeDistribution(branch);
+        res.json({ success: true, data });
+    } catch (err) { next(err); }
+};
+
+const getStudentTypeDistribution = async (req, res, next) => {
+    try {
+        const branch = getBranchFilter(req);
+        const data = await dashboardService.getStudentTypeDistribution(branch);
+        res.json({ success: true, data });
+    } catch (err) { next(err); }
+};
+
+const getLeaveRequestsByMonth = async (req, res, next) => {
+    try {
+        const year = req.query.year ? parseInt(req.query.year, 10) : new Date().getFullYear();
+        const branch = getBranchFilter(req);
+        const data = await dashboardService.getLeaveRequestsByMonth(year, branch);
+        res.json({ success: true, data });
+    } catch (err) { next(err); }
+};
+
+const getEmployeeBranchDistribution = async (req, res, next) => {
+    try {
+        const data = await dashboardService.getEmployeeBranchDistribution();
+        res.json({ success: true, data });
+    } catch (err) { next(err); }
+};
+
+const getLeaveTypeDistribution = async (req, res, next) => {
+    try {
+        const branch = getBranchFilter(req);
+        const data = await dashboardService.getLeaveTypeDistribution(branch);
+        res.json({ success: true, data });
+    } catch (err) { next(err); }
+};
+
 module.exports = {
     getSummary,
     getEmployeeByDepartment,
     getEmployeeStatus,
     getHiringTrend,
     getUsersByRole,
-    getRecentLogs
+    getRecentLogs,
+    getStudentAgeDistribution,
+    getStudentTypeDistribution,
+    getLeaveRequestsByMonth,
+    getEmployeeBranchDistribution,
+    getLeaveTypeDistribution
 };

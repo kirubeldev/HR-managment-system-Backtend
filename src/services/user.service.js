@@ -5,11 +5,13 @@ const emailService = require('./email.service');
 const auditLogService = require('./auditLog.service');
 const { Op } = require('sequelize');
 
-const getAll = async ({ page = 1, limit = 10, search = '', branch = '' }) => {
+const getAll = async ({ page = 1, limit = 10, search = '', branch = '', roleId = '', isActive = '' }) => {
   const offset = (page - 1) * limit;
   const where = { isDeleted: false };
   if (search) where.email = { [Op.iLike]: `%${search}%` };
   if (branch) where.branch = branch;
+  if (roleId) where.roleId = roleId;
+  if (isActive !== '') where.isActive = isActive === 'true';
   const { count, rows } = await User.findAndCountAll({
     where, limit: Number(limit), offset,
     include: [{ model: Role, as: 'role', attributes: ['id', 'name'] }],

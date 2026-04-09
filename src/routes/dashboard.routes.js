@@ -88,4 +88,11 @@ router.get('/users-by-role', requirePermission('view_user'), ctrl.getUsersByRole
  */
 router.get('/audit-logs', requirePermission('view_audit_logs'), ctrl.getRecentLogs);
 
+// New routes for additional charts
+router.get('/student-age-distribution', ctrl.getStudentAgeDistribution);
+router.get('/student-type-distribution', ctrl.getStudentTypeDistribution);
+router.get('/leave-requests-by-month', ctrl.getLeaveRequestsByMonth);
+router.get('/employee-branch-distribution', ctrl.getEmployeeBranchDistribution);
+router.get('/leave-type-distribution', ctrl.getLeaveTypeDistribution);
+
 module.exports = router;

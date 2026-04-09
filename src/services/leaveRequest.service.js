@@ -8,17 +8,37 @@ class LeaveRequestService {
 
         if (status) where.status = status;
         if (employeeId) where.employeeId = employeeId;
-        if (branch) where.branch = branch;
+        
+        const includeOptions = [
+            {
+                model: Employee,
+                as: 'employee',
+                attributes: ['id', 'firstName', 'lastName', 'profileImageUrl', 'position', 'branch']
+            }
+        ];
+
+        // Handle branch filtering
+        if (branch) {
+            if (query.allowNullBranch) {
+                // For non-admin users, include both direct branch matches and null branches
+                where[Op.or] = [{ branch: branch }, { branch: null }];
+            } else {
+                // For admin users, filter by employee branch when leave branch is null
+                // This is more complex - we need to use a subquery or different approach
+                includeOptions[0].where = {
+                    branch: branch
+                };
+                // Include leave requests that have the branch set directly OR have null branch but employee has the branch
+                where[Op.or] = [
+                    { branch: branch },
+                    { branch: null }
+                ];
+            }
+        }
 
         return await LeaveRequest.findAll({
             where,
-            include: [
-                {
-                    model: Employee,
-                    as: 'employee',
-                    attributes: ['id', 'firstName', 'lastName', 'profileImageUrl', 'position']
-                }
-            ],
+            include: includeOptions,
             order: [['createdAt', 'DESC']]
         });
     }
@@ -29,7 +49,7 @@ class LeaveRequestService {
                 {
                     model: Employee,
                     as: 'employee',
-                    attributes: ['id', 'firstName', 'lastName', 'profileImageUrl', 'position']
+                    attributes: ['id', 'firstName', 'lastName', 'profileImageUrl', 'position', 'branch']
                 }
             ]
         });
@@ -38,7 +58,9 @@ class LeaveRequestService {
     }
 
     async create(data) {
-        return await LeaveRequest.create(data);
+        const employee = await Employee.findByPk(data.employeeId);
+        const branch = employee ? employee.branch : null;
+        return await LeaveRequest.create({ ...data, branch });
     }
 
     async updateStatus(id, { status, supervisorComment, supervisorName }) {

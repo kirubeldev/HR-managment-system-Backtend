@@ -99,9 +99,168 @@ const getRecentLogs = async (limit = 5) => {
     });
 };
 
+// New service methods for additional charts
+const getStudentAgeDistribution = async (branch = null) => {
+    const where = { isDeleted: false, age: { [Op.not]: null } };
+    if (branch) where.branch = branch;
+
+    const distribution = await Student.findAll({
+        attributes: [
+            [sequelize.literal(`CASE 
+                WHEN age < 18 THEN 'Under 18'
+                WHEN age BETWEEN 18 AND 25 THEN '18-25'
+                WHEN age BETWEEN 26 AND 35 THEN '26-35'
+                WHEN age BETWEEN 36 AND 45 THEN '36-45'
+                ELSE 'Over 45'
+            END`), 'ageGroup'],
+            [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+        ],
+        where,
+        group: [
+            sequelize.literal(`CASE 
+                WHEN age < 18 THEN 'Under 18'
+                WHEN age BETWEEN 18 AND 25 THEN '18-25'
+                WHEN age BETWEEN 26 AND 35 THEN '26-35'
+                WHEN age BETWEEN 36 AND 45 THEN '36-45'
+                ELSE 'Over 45'
+            END`)
+        ],
+        raw: true
+    });
+
+    return distribution.map(d => ({
+        name: d.ageGroup,
+        count: parseInt(d.count, 10)
+    }));
+};
+
+const getStudentTypeDistribution = async (branch = null) => {
+    const where = { isDeleted: false };
+    if (branch) where.branch = branch;
+
+    const distribution = await Student.findAll({
+        attributes: [
+            'type',
+            [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+        ],
+        where,
+        group: ['type'],
+        raw: true
+    });
+
+    return distribution.map(d => ({
+        name: d.type.charAt(0).toUpperCase() + d.type.slice(1),
+        count: parseInt(d.count, 10)
+    }));
+};
+
+const getLeaveRequestsByMonth = async (year = new Date().getFullYear(), branch = null) => {
+    const where = {};
+    const includeOptions = [
+        {
+            model: Employee,
+            as: 'employee',
+            attributes: [],
+            where: branch ? { branch: branch } : undefined,
+            required: false
+        }
+    ];
+
+    if (branch) {
+        where[Op.or] = [{ branch: branch }, { branch: null }];
+    }
+
+    const monthlyData = await LeaveRequest.findAll({
+        attributes: [
+            [sequelize.fn('EXTRACT', sequelize.literal('MONTH FROM "LeaveRequest"."createdAt"')), 'month'],
+            [sequelize.fn('COUNT', sequelize.col('LeaveRequest.id')), 'count']
+        ],
+        where: {
+            ...where,
+            [Op.and]: [
+                sequelize.where(sequelize.fn('EXTRACT', sequelize.literal('YEAR FROM "LeaveRequest"."createdAt"')), year)
+            ]
+        },
+        include: includeOptions,
+        group: [
+            sequelize.fn('EXTRACT', sequelize.literal('MONTH FROM "LeaveRequest"."createdAt"'))
+        ],
+        order: [
+            [sequelize.fn('EXTRACT', sequelize.literal('MONTH FROM "LeaveRequest"."createdAt"')), 'ASC']
+        ],
+        raw: true
+    });
+
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const result = monthNames.map((month, index) => {
+        const found = monthlyData.find(d => parseInt(d.month) === index + 1);
+        return {
+            month,
+            count: found ? parseInt(found.count, 10) : 0
+        };
+    });
+
+    return result;
+};
+
+const getEmployeeBranchDistribution = async () => {
+    const distribution = await Employee.findAll({
+        attributes: [
+            'branch',
+            [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+        ],
+        where: { isDeleted: false, branch: { [Op.not]: null } },
+        group: ['branch'],
+        raw: true
+    });
+
+    return distribution.map(d => ({
+        name: d.branch.charAt(0).toUpperCase() + d.branch.slice(1),
+        count: parseInt(d.count, 10)
+    }));
+};
+
+const getLeaveTypeDistribution = async (branch = null) => {
+    const where = {};
+    const includeOptions = [
+        {
+            model: Employee,
+            as: 'employee',
+            attributes: [],
+            where: branch ? { branch: branch } : undefined,
+            required: false
+        }
+    ];
+
+    if (branch) {
+        where[Op.or] = [{ branch: branch }, { branch: null }];
+    }
+
+    const distribution = await LeaveRequest.findAll({
+        attributes: [
+            'leaveType',
+            [sequelize.fn('COUNT', sequelize.col('LeaveRequest.id')), 'count']
+        ],
+        where,
+        include: includeOptions,
+        group: ['leaveType'],
+        raw: true
+    });
+
+    return distribution.map(d => ({
+        name: d.leaveType,
+        count: parseInt(d.count, 10)
+    }));
+};
+
 module.exports = {
     getSummary,
     getEmployeeStatusDistribution,
     getUsersByRole,
-    getRecentLogs
+    getRecentLogs,
+    getStudentAgeDistribution,
+    getStudentTypeDistribution,
+    getLeaveRequestsByMonth,
+    getEmployeeBranchDistribution,
+    getLeaveTypeDistribution
 };

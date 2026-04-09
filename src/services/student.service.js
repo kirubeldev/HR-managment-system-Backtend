@@ -3,16 +3,22 @@ const { Op } = require('sequelize');
 
 class StudentService {
     async getAll(query = {}) {
-        const { search, branch } = query;
+        const { search, branch, type, gender, educationLevel, maritalStatus } = query;
         const where = { isDeleted: false };
 
         if (search) {
             where[Op.or] = [
                 { fullName: { [Op.iLike]: `%${search}%` } },
+                { firstName: { [Op.iLike]: `%${search}%` } },
+                { lastName: { [Op.iLike]: `%${search}%` } },
                 { phoneNumber: { [Op.iLike]: `%${search}%` } },
             ];
         }
         if (branch) where.branch = branch;
+        if (type) where.type = type;
+        if (gender) where.gender = gender;
+        if (educationLevel) where.educationLevel = educationLevel;
+        if (maritalStatus) where.maritalStatus = maritalStatus;
 
         return await Student.findAll({
             where,
