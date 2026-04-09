@@ -14,7 +14,7 @@ router.use(authenticate);
  *       200:
  *         description: Departments list
  */
-router.get('/', requirePermission('view_departments'), ctrl.getAll);
+router.get('/', requirePermission('view_department'), ctrl.getAll);
 
 /**
  * @swagger
