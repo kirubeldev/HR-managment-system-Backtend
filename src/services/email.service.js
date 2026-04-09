@@ -2,11 +2,12 @@ const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT) || 587,
+  port: Number(process.env.SMTP_PORT) || 465,
+  secure: true, // true for port 465, false for other ports
   auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-  connectionTimeout: 5000, // 5 seconds
-  greetingTimeout: 5000,   // 5 seconds
-  socketTimeout: 5000      // 5 seconds
+  connectionTimeout: 15000, // 15 seconds
+  greetingTimeout: 15000,   // 15 seconds
+  socketTimeout: 15000      // 15 seconds
 });
 
 transporter.verify((error, success) => {
