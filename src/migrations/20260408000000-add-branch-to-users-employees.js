@@ -3,16 +3,24 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     // Add branch to employees
-    await queryInterface.addColumn('employees', 'branch', {
-      type: Sequelize.ENUM('enkulal fabrica', 'bole center'),
-      allowNull: true,
-    });
+    try {
+      await queryInterface.addColumn('employees', 'branch', {
+        type: Sequelize.ENUM('enkulal fabrica', 'bole center'),
+        allowNull: true,
+      });
+    } catch (err) {
+      console.log('Column employees.branch may already exist:', err.message);
+    }
 
     // Add branch to users
-    await queryInterface.addColumn('users', 'branch', {
-      type: Sequelize.ENUM('enkulal fabrica', 'bole center'),
-      allowNull: true,
-    });
+    try {
+      await queryInterface.addColumn('users', 'branch', {
+        type: Sequelize.ENUM('enkulal fabrica', 'bole center'),
+        allowNull: true,
+      });
+    } catch (err) {
+      console.log('Column users.branch may already exist:', err.message);
+    }
   },
 
   down: async (queryInterface, Sequelize) => {

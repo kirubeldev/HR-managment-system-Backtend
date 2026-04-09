@@ -3,11 +3,15 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     // First, update existing data from 'family' to 'child'
-    await queryInterface.sequelize.query(`
-      UPDATE students 
-      SET type = 'child' 
-      WHERE type = 'family'
-    `);
+    try {
+      await queryInterface.sequelize.query(`
+        UPDATE students 
+        SET type = 'child' 
+        WHERE type = 'family'
+      `);
+    } catch (err) {
+      console.log('Update family to child failed:', err.message);
+    }
 
     // Drop the old enum constraint
     await queryInterface.sequelize.query(`

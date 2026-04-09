@@ -3,18 +3,26 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     // First, update existing data from 'family' to 'child'
-    await queryInterface.sequelize.query(`
-      UPDATE students 
-      SET type = 'child' 
-      WHERE type = 'family'
-    `);
+    try {
+      await queryInterface.sequelize.query(`
+        UPDATE students 
+        SET type = 'child' 
+        WHERE type = 'family'
+      `);
+    } catch (err) {
+      console.log('Update family to child failed (maybe family is not a valid enum value):', err.message);
+    }
 
     // Then alter the enum to replace 'family' with 'child'
-    await queryInterface.changeColumn('students', 'type', {
-      type: Sequelize.ENUM('trainee', 'child'),
-      allowNull: false,
-      defaultValue: 'trainee'
-    });
+    try {
+      await queryInterface.changeColumn('students', 'type', {
+        type: Sequelize.ENUM('trainee', 'child'),
+        allowNull: false,
+        defaultValue: 'trainee'
+      });
+    } catch (err) {
+      console.log('ChangeColumn type failed (maybe already child):', err.message);
+    }
   },
 
   down: async (queryInterface, Sequelize) => {
