@@ -181,6 +181,7 @@ const getLeaveRequestsByMonth = async (year = new Date().getFullYear(), branch =
     const monthlyData = await LeaveRequest.findAll({
         attributes: [
             [sequelize.fn('EXTRACT', sequelize.literal('MONTH FROM "LeaveRequest"."createdAt"')), 'month'],
+            'status',
             [sequelize.fn('COUNT', sequelize.col('LeaveRequest.id')), 'count']
         ],
         where: {
@@ -191,7 +192,8 @@ const getLeaveRequestsByMonth = async (year = new Date().getFullYear(), branch =
         },
         include: includeOptions,
         group: [
-            sequelize.fn('EXTRACT', sequelize.literal('MONTH FROM "LeaveRequest"."createdAt"'))
+            sequelize.fn('EXTRACT', sequelize.literal('MONTH FROM "LeaveRequest"."createdAt"')),
+            'status'
         ],
         order: [
             [sequelize.fn('EXTRACT', sequelize.literal('MONTH FROM "LeaveRequest"."createdAt"')), 'ASC']
@@ -201,10 +203,19 @@ const getLeaveRequestsByMonth = async (year = new Date().getFullYear(), branch =
 
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const result = monthNames.map((month, index) => {
-        const found = monthlyData.find(d => parseInt(d.month) === index + 1);
+        const monthNum = index + 1;
+        const pending = monthlyData.find(d => parseInt(d.month) === monthNum && d.status === 'Pending');
+        const approved = monthlyData.find(d => parseInt(d.month) === monthNum && d.status === 'Approved');
+        const rejected = monthlyData.find(d => parseInt(d.month) === monthNum && d.status === 'Rejected');
+
         return {
             month,
-            count: found ? parseInt(found.count, 10) : 0
+            approved: approved ? parseInt(approved.count, 10) : 0,
+            pending: pending ? parseInt(pending.count, 10) : 0,
+            rejected: rejected ? parseInt(rejected.count, 10) : 0,
+            total: (approved ? parseInt(approved.count, 10) : 0) + 
+                   (pending ? parseInt(pending.count, 10) : 0) + 
+                   (rejected ? parseInt(rejected.count, 10) : 0)
         };
     });
 
