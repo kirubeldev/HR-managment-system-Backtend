@@ -22,6 +22,8 @@ const getSummary = async (branch = null) => {
         totalUsers,
         activeRoles,
         totalStudents,
+        totalTrainees,
+        totalChildren,
         totalPrograms,
         pendingLeaves
     ] = await Promise.all([
@@ -32,6 +34,8 @@ const getSummary = async (branch = null) => {
         User.count({ where: { isDeleted: false } }),
         Role.count({ where: { isDeleted: false } }),
         Student.count({ where: studentWhere }),
+        Student.count({ where: { ...studentWhere, type: 'trainee' } }),
+        Student.count({ where: { ...studentWhere, type: 'child' } }),
         TeachingProgram.count({ where: programWhere }),
         LeaveRequest.count({ where: leaveWhere })
     ]);
@@ -41,7 +45,11 @@ const getSummary = async (branch = null) => {
         departments: totalDepartments,
         users: totalUsers,
         roles: activeRoles,
-        students: totalStudents,
+        students: { 
+            total: totalStudents, 
+            trainees: totalTrainees, 
+            children: totalChildren 
+        },
         programs: totalPrograms,
         pendingLeaves: pendingLeaves
     };

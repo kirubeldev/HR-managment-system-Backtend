@@ -13,7 +13,7 @@ app.use(helmet());
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   'http://localhost:3000',
-  'https://hrms-blush-iota.vercel.app'
+  'https://hrsm-tau.vercel.app'
 ].filter(Boolean);
 
 app.use(cors({

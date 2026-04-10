@@ -16,12 +16,23 @@ const getAll = async ({ page = 1, limit = 10, search = '', status = '', departme
   if (departmentId) where.departmentId = departmentId;
   if (branch) where.branch = branch;
   if (gender) where.gender = gender;
+  const isExportAll = limit === 0 || limit === '0' || limit === -1 || limit === 'all';
+  const queryLimit = isExportAll ? null : Number(limit);
+  const queryOffset = isExportAll ? null : offset;
+
   const { count, rows } = await Employee.findAndCountAll({
-    where, limit: Number(limit), offset,
+    where, 
+    limit: queryLimit, 
+    offset: queryOffset,
     include: [{ model: Department, as: 'department', attributes: ['id', 'name'] }],
     order: [['createdAt', 'DESC']],
   });
-  return { total: count, page: Number(page), limit: Number(limit), data: rows };
+  return { 
+    total: count, 
+    page: isExportAll ? 1 : Number(page), 
+    limit: isExportAll ? count : Number(limit), 
+    data: rows 
+  };
 };
 
 const getById = async (id) => {

@@ -6,6 +6,7 @@ const Department = sequelize.define('Department', {
   name: { type: DataTypes.STRING, allowNull: false, unique: true },
   description: { type: DataTypes.TEXT, allowNull: true },
   managerId: { type: DataTypes.UUID, allowNull: true },
+  creationDate: { type: DataTypes.DATEONLY, allowNull: true },
   isDeleted: { type: DataTypes.BOOLEAN, defaultValue: false },
   deletedAt: { type: DataTypes.DATE, allowNull: true },
 }, { tableName: 'departments', timestamps: true });
