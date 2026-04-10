@@ -7,7 +7,7 @@ const { User, Employee, Student, LeaveRequest } = require('../models');
  */
 async function generateDisplayId(type) {
   const prefixes = {
-    USER: 'DEP', // Department (for users)
+    USER: 'USR', // User
     EMPLOYEE: 'EMP',
     STUDENT: 'STU',
     LEAVE: 'LEA'

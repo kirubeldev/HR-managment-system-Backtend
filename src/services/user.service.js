@@ -6,8 +6,7 @@ const auditLogService = require('./auditLog.service');
 const { generateDisplayId } = require('../utils/idGenerator');
 const { Op } = require('sequelize');
 
-const getAll = async ({ page = 1, limit = 10, search = '', branch = '', roleId = '', isActive = '' }) => {
-  const offset = (page - 1) * limit;
+const getAll = async ({ page = 1, limit = 10, search = '', branch = '', roleId = '', isActive = '', sortField = 'createdAt', sortOrder = 'DESC' }) => {
   const where = { isDeleted: false };
   if (search) {
     where[Op.or] = [
@@ -18,13 +17,31 @@ const getAll = async ({ page = 1, limit = 10, search = '', branch = '', roleId =
   if (branch) where.branch = branch;
   if (roleId) where.roleId = roleId;
   if (isActive !== '') where.isActive = isActive === 'true';
-  const { count, rows } = await User.findAndCountAll({
-    where, limit: Number(limit), offset,
+  
+  // If limit=0, return all records without pagination
+  const shouldPaginate = limit !== '0' && limit !== 0;
+  
+  // Determine sort field and order
+  const validSortFields = ['createdAt', 'email', 'isActive'];
+  const actualSortField = validSortFields.includes(sortField) ? sortField : 'createdAt';
+  const actualSortOrder = sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+  
+  const queryOptions = {
+    where,
     include: [{ model: Role, as: 'role', attributes: ['id', 'name'] }],
-    order: [['createdAt', 'DESC']],
+    order: [[actualSortField, actualSortOrder]],
     attributes: { exclude: ['passwordHash', 'resetToken', 'resetTokenExpiry'] },
-  });
-  return { total: count, page: Number(page), limit: Number(limit), data: rows };
+  };
+  
+  if (shouldPaginate) {
+    queryOptions.limit = Number(limit);
+    queryOptions.offset = (page - 1) * limit;
+  }
+  
+  const { count, rows } = await User.findAndCountAll(queryOptions);
+  return shouldPaginate 
+    ? { total: count, page: Number(page), limit: Number(limit), data: rows }
+    : { total: count, data: rows };
 };
 
 const getById = async (id) => {

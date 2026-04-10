@@ -6,6 +6,7 @@ class LeaveRequestController {
     async getAll(req, res, next) {
         try {
             const query = { ...req.query };
+            console.log('Controller received query:', req.query);
             if (!isAdmin(req.user)) {
                 query.branch = req.user?.branch || null;
                 // Allow viewing null branches for transition period
@@ -40,11 +41,23 @@ class LeaveRequestController {
     async updateStatus(req, res, next) {
         try {
             const isHR = req.user?.role?.name?.toLowerCase().includes('hr');
-            if (!isHR) {
-                return res.status(403).json({ success: false, message: 'Only HR personnel can approve leave requests' });
+            const isAdmin = req.user?.role?.name?.toLowerCase() === 'administrator';
+            
+            if (!isHR && !isAdmin) {
+                return res.status(403).json({ success: false, message: 'Only HR personnel or administrators can approve leave requests' });
             }
-            const leave = await LeaveRequestService.updateStatus(req.params.id, req.body);
-            res.status(200).json({ success: true, data: leave });
+            
+            // Get the leave request to check the requester's role
+            const leave = await LeaveRequestService.getById(req.params.id);
+            
+            // If the requester is HR, only admin can approve
+            const isRequesterHR = leave.employee?.role?.name?.toLowerCase().includes('hr');
+            if (isRequesterHR && !isAdmin) {
+                return res.status(403).json({ success: false, message: 'Only administrators can approve leave requests from HR personnel' });
+            }
+            
+            const updatedLeave = await LeaveRequestService.updateStatus(req.params.id, req.body);
+            res.status(200).json({ success: true, data: updatedLeave });
         } catch (error) {
             next(error);
         }

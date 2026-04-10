@@ -4,15 +4,26 @@ const auditLogService = require('./auditLog.service');
 const { Op } = require('sequelize');
 
 const getAll = async ({ page = 1, limit = 10, search = '' }) => {
-  const offset = (page - 1) * limit;
   const where = { isDeleted: false };
   if (search) where.name = { [Op.iLike]: `%${search}%` };
-  const { count, rows } = await Department.findAndCountAll({
-    where, limit: Number(limit), offset,
+  
+  // If limit=0, return all records without pagination
+  const shouldPaginate = limit !== '0' && limit !== 0;
+  const queryOptions = {
+    where,
     include: [{ model: Employee, as: 'manager', attributes: ['id', 'firstName', 'lastName'] }],
     order: [['createdAt', 'DESC']],
-  });
-  return { total: count, page: Number(page), limit: Number(limit), data: rows };
+  };
+  
+  if (shouldPaginate) {
+    queryOptions.limit = Number(limit);
+    queryOptions.offset = (page - 1) * limit;
+  }
+  
+  const { count, rows } = await Department.findAndCountAll(queryOptions);
+  return shouldPaginate 
+    ? { total: count, page: Number(page), limit: Number(limit), data: rows }
+    : { total: count, data: rows };
 };
 
 const create = async (data, actorId) => {

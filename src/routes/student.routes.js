@@ -22,7 +22,7 @@ router.use(authenticate);
  *       200:
  *         description: List of students
  */
-router.get('/', requirePermission('view_student'), ctrl.getAll);
+router.get('/', requirePermission(['view_student', 'view_child', 'view_trainee']), ctrl.getAll);
 
 /**
  * @swagger
@@ -39,7 +39,7 @@ router.get('/', requirePermission('view_student'), ctrl.getAll);
  *       200:
  *         description: Student details
  */
-router.get('/:id', requirePermission('view_student'), ctrl.getById);
+router.get('/:id', requirePermission(['view_student', 'view_child', 'view_trainee']), ctrl.getById);
 
 /**
  * @swagger
@@ -64,7 +64,7 @@ router.get('/:id', requirePermission('view_student'), ctrl.getById);
  *       201:
  *         description: Student created
  */
-router.post('/', requirePermission('create_student'), ctrl.create);
+router.post('/', requirePermission(['create_student', 'create_child', 'create_trainee']), ctrl.create);
 
 /**
  * @swagger
@@ -81,7 +81,7 @@ router.post('/', requirePermission('create_student'), ctrl.create);
  *       200:
  *         description: Student updated
  */
-router.put('/:id', requirePermission('edit_student'), ctrl.update);
+router.put('/:id', requirePermission(['edit_student', 'edit_child', 'edit_trainee']), ctrl.update);
 
 /**
  * @swagger
@@ -98,6 +98,6 @@ router.put('/:id', requirePermission('edit_student'), ctrl.update);
  *       200:
  *         description: Student deleted
  */
-router.delete('/:id', requirePermission('delete_student'), ctrl.delete);
+router.delete('/:id', requirePermission(['delete_student', 'delete_child', 'delete_trainee']), ctrl.delete);
 
 module.exports = router;

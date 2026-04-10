@@ -4,7 +4,7 @@ const { Op } = require('sequelize');
 
 class StudentService {
     async getAll(query = {}) {
-        const { search, branch, type, gender, educationLevel, maritalStatus } = query;
+        const { search, branch, type, gender, educationLevel, maritalStatus, limit = 10, page = 1, sortField = 'createdAt', sortOrder = 'DESC' } = query;
         const where = { isDeleted: false };
 
         if (search) {
@@ -22,14 +22,34 @@ class StudentService {
         if (educationLevel) where.educationLevel = educationLevel;
         if (maritalStatus) where.maritalStatus = maritalStatus;
 
-        return await Student.findAll({
+        // If limit=0, return all records without pagination
+        const shouldPaginate = limit !== '0' && limit !== 0;
+        
+        // Determine sort field and order
+        const validSortFields = ['createdAt', 'fullName', 'firstName', 'lastName', 'dateOfBirth'];
+        const actualSortField = validSortFields.includes(sortField) ? sortField : 'createdAt';
+        const actualSortOrder = sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+        
+        const queryOptions = {
             where,
             include: [
                 { model: Employee, as: 'teacher', attributes: ['id', 'firstName', 'lastName'] },
                 { model: TeachingProgram, as: 'programs', through: { attributes: [] } }
             ],
-            order: [['createdAt', 'DESC']]
-        });
+            order: [[actualSortField, actualSortOrder]]
+        };
+        
+        if (shouldPaginate) {
+            queryOptions.limit = Number(limit);
+            queryOptions.offset = (page - 1) * limit;
+        }
+
+        const students = await Student.findAll(queryOptions);
+        const count = await Student.count({ where });
+        
+        return shouldPaginate 
+            ? { total: count, page: Number(page), limit: Number(limit), data: students }
+            : { total: count, data: students };
     }
 
     async getById(id) {

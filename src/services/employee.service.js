@@ -3,8 +3,7 @@ const auditLogService = require('./auditLog.service');
 const { generateDisplayId } = require('../utils/idGenerator');
 const { Op } = require('sequelize');
 
-const getAll = async ({ page = 1, limit = 10, search = '', status = '', departmentId = '', branch = '', gender = '' }) => {
-  const offset = (page - 1) * limit;
+const getAll = async ({ page = 1, limit = 10, search = '', status = '', departmentId = '', branch = '', gender = '', sortField = 'createdAt', sortOrder = 'DESC' }) => {
   const where = { isDeleted: false };
   if (search) where[Op.or] = [
     { firstName: { [Op.iLike]: `%${search}%` } },
@@ -16,23 +15,30 @@ const getAll = async ({ page = 1, limit = 10, search = '', status = '', departme
   if (departmentId) where.departmentId = departmentId;
   if (branch) where.branch = branch;
   if (gender) where.gender = gender;
-  const isExportAll = limit === 0 || limit === '0' || limit === -1 || limit === 'all';
-  const queryLimit = isExportAll ? null : Number(limit);
-  const queryOffset = isExportAll ? null : offset;
-
-  const { count, rows } = await Employee.findAndCountAll({
-    where, 
-    limit: queryLimit, 
-    offset: queryOffset,
+  
+  // If limit=0, return all records without pagination
+  const shouldPaginate = limit !== '0' && limit !== 0 && limit !== -1 && limit !== 'all' && limit !== 'all';
+  
+  // Determine sort field and order
+  const validSortFields = ['createdAt', 'firstName', 'lastName', 'email', 'hireDate', 'status'];
+  const actualSortField = validSortFields.includes(sortField) ? sortField : 'createdAt';
+  const actualSortOrder = sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+  
+  const queryOptions = {
+    where,
     include: [{ model: Department, as: 'department', attributes: ['id', 'name'] }],
-    order: [['createdAt', 'DESC']],
-  });
-  return { 
-    total: count, 
-    page: isExportAll ? 1 : Number(page), 
-    limit: isExportAll ? count : Number(limit), 
-    data: rows 
+    order: [[actualSortField, actualSortOrder]],
   };
+  
+  if (shouldPaginate) {
+    queryOptions.limit = Number(limit);
+    queryOptions.offset = (page - 1) * limit;
+  }
+  
+  const { count, rows } = await Employee.findAndCountAll(queryOptions);
+  return shouldPaginate 
+    ? { total: count, page: Number(page), limit: Number(limit), data: rows }
+    : { total: count, data: rows };
 };
 
 const getById = async (id) => {
