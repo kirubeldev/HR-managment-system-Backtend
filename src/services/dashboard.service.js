@@ -181,7 +181,7 @@ const getLeaveRequestsByMonth = async (year = new Date().getFullYear(), branch =
     const monthlyData = await LeaveRequest.findAll({
         attributes: [
             [sequelize.fn('EXTRACT', sequelize.literal('MONTH FROM "LeaveRequest"."createdAt"')), 'month'],
-            'status',
+            [sequelize.col('LeaveRequest.status'), 'status'],
             [sequelize.fn('COUNT', sequelize.col('LeaveRequest.id')), 'count']
         ],
         where: {
@@ -193,7 +193,7 @@ const getLeaveRequestsByMonth = async (year = new Date().getFullYear(), branch =
         include: includeOptions,
         group: [
             sequelize.fn('EXTRACT', sequelize.literal('MONTH FROM "LeaveRequest"."createdAt"')),
-            'status'
+            sequelize.col('LeaveRequest.status')
         ],
         order: [
             [sequelize.fn('EXTRACT', sequelize.literal('MONTH FROM "LeaveRequest"."createdAt"')), 'ASC']
