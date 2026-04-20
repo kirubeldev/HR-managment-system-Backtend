@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const Department = sequelize.define('Department', {
+const Project = sequelize.define('Project', {
   id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
   name: { type: DataTypes.STRING, allowNull: false, unique: true },
   description: { type: DataTypes.TEXT, allowNull: true },
@@ -10,6 +10,6 @@ const Department = sequelize.define('Department', {
   endDate: { type: DataTypes.DATEONLY, allowNull: true },
   isDeleted: { type: DataTypes.BOOLEAN, defaultValue: false },
   deletedAt: { type: DataTypes.DATE, allowNull: true },
-}, { tableName: 'departments', timestamps: true });
+}, { tableName: 'projects', timestamps: true });
 
-module.exports = Department;
+module.exports = Project;

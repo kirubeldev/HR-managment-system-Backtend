@@ -80,4 +80,33 @@ const sendActivationEmail = async (to, activationToken) => {
   console.log(`📧 Activation email sent to ${to}: ${link}`);
 };
 
-module.exports = { sendResetLink, sendOTPEmail, sendActivationEmail };
+const sendLeaveStatusEmail = async (to, employeeName, status, leaveDetails) => {
+  const statusColor = status === 'Approved' ? '#22c55e' : '#ef4444';
+  const statusIcon = status === 'Approved' ? '✅' : '❌';
+  
+  await transporter.sendMail({
+    from: `"HRMS Admin" <${process.env.SMTP_USER}>`,
+    to,
+    subject: `Leave Request ${status} - HRMS`,
+    html: `
+      <div style="font-family:sans-serif;max-width:500px;margin:auto">
+        <h2 style="color:#6366f1">Leave Request Update</h2>
+        <p>Dear ${employeeName},</p>
+        <div style="background:#f3f4f6;padding:20px;border-radius:8px;margin:20px 0">
+          <p style="font-size:18px;font-weight:bold;color:${statusColor};margin:0 0 12px 0">
+            ${statusIcon} Your leave request has been <strong>${status}</strong>
+          </p>
+          <table style="width:100%;border-collapse:collapse">
+            <tr><td style="padding:6px 0;color:#666">Leave Type:</td><td style="padding:6px 0;font-weight:600">${leaveDetails.leaveType}</td></tr>
+            <tr><td style="padding:6px 0;color:#666">Start Date:</td><td style="padding:6px 0;font-weight:600">${new Date(leaveDetails.startDate).toLocaleDateString()}</td></tr>
+            <tr><td style="padding:6px 0;color:#666">End Date:</td><td style="padding:6px 0;font-weight:600">${new Date(leaveDetails.endDate).toLocaleDateString()}</td></tr>
+            <tr><td style="padding:6px 0;color:#666">Total Days:</td><td style="padding:6px 0;font-weight:600">${leaveDetails.totalDays} day(s)</td></tr>
+          </table>
+        </div>
+        <p style="color:#888;font-size:12px">This is an automated notification from the HRMS system.</p>
+      </div>`,
+  });
+  console.log(`📧 Leave status email sent to ${to}: ${status}`);
+};
+
+module.exports = { sendResetLink, sendOTPEmail, sendActivationEmail, sendLeaveStatusEmail };

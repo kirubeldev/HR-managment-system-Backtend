@@ -1,6 +1,7 @@
 const { LeaveRequest, Employee, Role, sequelize } = require('../models');
 const { generateDisplayId } = require('../utils/idGenerator');
 const { Op } = require('sequelize');
+const emailService = require('./email.service');
 
 class LeaveRequestService {
     async getAll(query = {}) {
@@ -35,16 +36,11 @@ class LeaveRequestService {
         // Handle branch filtering
         if (branch) {
             if (query.allowNullBranch) {
-                // For non-admin users, include both direct branch matches and null branches
                 andConditions.push({
                     [Op.or]: [{ branch: branch }, { branch: null }]
                 });
             } else {
-                // For admin users, filter by employee branch when leave branch is null
-                includeOptions[0].where = {
-                    branch: branch
-                };
-                // Include leave requests that have the branch set directly OR have null branch but employee (filtered above) has the branch
+                includeOptions[0].where = { branch: branch };
                 andConditions.push({
                     [Op.or]: [
                         { branch: branch },
@@ -58,22 +54,14 @@ class LeaveRequestService {
             where[Op.and] = andConditions;
         }
 
-        // If limit=0, return all records without pagination
         const shouldPaginate = limit !== '0' && limit !== 0;
         
-        // Determine sort
         const validSortFields = ['createdAt', 'startDate', 'endDate', 'status', 'leaveType'];
         const actualSortField = validSortFields.includes(sortField) ? sortField : 'createdAt';
         const actualSortOrder = sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
-        
-        console.log('Leave sort params:', { sortField, sortOrder, actualSortField, actualSortOrder });
 
-        // Default: sort by "nearest to NOW()" so today's real records appear first,
-        // even if older seeded records have future createdAt dates.
-        // When user explicitly sorts by createdAt ASC/DESC, use plain column sort.
         let orderClause;
         if (actualSortField === 'createdAt') {
-            // Sort by absolute distance from NOW() — closest date to today first
             orderClause = [
                 [sequelize.literal(`ABS(EXTRACT(EPOCH FROM ("LeaveRequest"."createdAt" - NOW())))`), 'ASC']
             ];
@@ -87,22 +75,17 @@ class LeaveRequestService {
             order: orderClause
         };
         
-        console.log('Final Order Clause:', JSON.stringify(orderClause, null, 2));
-        
         if (shouldPaginate) {
             queryOptions.limit = Number(limit);
             queryOptions.offset = (page - 1) * limit;
         }
 
-        console.log('Sequelize query options:', JSON.stringify(queryOptions, null, 2));
         const leaves = await LeaveRequest.findAll(queryOptions);
-        console.log('First 3 leaves createdAt:', leaves.slice(0, 3).map(l => l.createdAt));
         
-        // Use count with the same include options if they contain filters
         const countOptions = { where };
         if (includeOptions[0].where) {
             countOptions.include = includeOptions;
-            countOptions.distinct = true; // Use distinct to count primary records only
+            countOptions.distinct = true;
         }
         const count = await LeaveRequest.count(countOptions);
 
@@ -117,7 +100,7 @@ class LeaveRequestService {
                 {
                     model: Employee,
                     as: 'employee',
-                    attributes: ['id', 'firstName', 'lastName', 'profileImageUrl', 'position', 'branch'],
+                    attributes: ['id', 'firstName', 'lastName', 'profileImageUrl', 'position', 'branch', 'email', 'hireDate'],
                     include: [
                         {
                             model: Role,
@@ -135,10 +118,7 @@ class LeaveRequestService {
     async create(data) {
         const employee = await Employee.findByPk(data.employeeId);
         const branch = employee ? employee.branch : null;
-        
-        // Generate unique display ID
         const displayId = await generateDisplayId('LEAVE');
-        
         return await LeaveRequest.create({ ...data, branch, displayId });
     }
 
@@ -148,7 +128,59 @@ class LeaveRequestService {
         if (supervisorComment) updateData.supervisorComment = supervisorComment;
         if (supervisorName) updateData.supervisorName = supervisorName;
         await leave.update(updateData);
+        
+        // Send email notification to employee
+        try {
+            if (leave.employee && leave.employee.email) {
+                const employeeName = `${leave.employee.firstName} ${leave.employee.lastName}`;
+                await emailService.sendLeaveStatusEmail(
+                    leave.employee.email,
+                    employeeName,
+                    status,
+                    {
+                        leaveType: leave.leaveType,
+                        startDate: leave.startDate,
+                        endDate: leave.endDate,
+                        totalDays: leave.totalDays
+                    }
+                );
+            }
+        } catch (emailErr) {
+            console.log('Failed to send leave status email:', emailErr.message);
+        }
+        
         return await this.getById(id);
+    }
+
+    async getLeaveBalance(employeeId) {
+        const employee = await Employee.findByPk(employeeId);
+        if (!employee) throw new Error('Employee not found');
+        
+        const hireDate = new Date(employee.hireDate);
+        const now = new Date();
+        
+        // Calculate years of service (including partial year — at least 1)
+        const yearsOfService = Math.max(1, Math.ceil((now - hireDate) / (365.25 * 24 * 60 * 60 * 1000)));
+        
+        // 15 days per year, accumulated and carried over
+        const totalEntitlement = yearsOfService * 15;
+        
+        // Sum approved leave days
+        const totalTaken = await LeaveRequest.sum('totalDays', {
+            where: { employeeId, status: 'Approved' }
+        }) || 0;
+        
+        const available = totalEntitlement - totalTaken;
+        
+        return {
+            employeeId,
+            employeeName: `${employee.firstName} ${employee.lastName}`,
+            hireDate: employee.hireDate,
+            yearsOfService,
+            totalEntitlement,
+            totalTaken,
+            available: Math.max(0, available)
+        };
     }
 
     async delete(id) {

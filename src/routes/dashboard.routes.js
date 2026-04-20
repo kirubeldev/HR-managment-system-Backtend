@@ -94,5 +94,6 @@ router.get('/student-type-distribution', ctrl.getStudentTypeDistribution);
 router.get('/leave-requests-by-month', ctrl.getLeaveRequestsByMonth);
 router.get('/employee-branch-distribution', ctrl.getEmployeeBranchDistribution);
 router.get('/leave-type-distribution', ctrl.getLeaveTypeDistribution);
+router.get('/voc-trainee-gender', ctrl.getVocTraineeGenderDistribution);
 
 module.exports = router;

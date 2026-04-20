@@ -7,6 +7,7 @@ router.use(authenticate);
 
 router.get('/', LeaveRequestController.getAll);
 router.post('/', LeaveRequestController.create);
+router.get('/balance/:employeeId', LeaveRequestController.getBalance);
 router.get('/:id', LeaveRequestController.getById);
 router.patch('/:id', LeaveRequestController.updateStatus);
 router.delete('/:id', LeaveRequestController.delete);

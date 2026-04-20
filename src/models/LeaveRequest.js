@@ -6,7 +6,7 @@ const LeaveRequest = sequelize.define('LeaveRequest', {
     displayId: { type: DataTypes.STRING, allowNull: true, unique: true, field: 'displayid' }, // e.g., LEA001
     employeeId: { type: DataTypes.UUID, allowNull: false },
     leaveType: {
-        type: DataTypes.ENUM('Annual', 'Sick', 'Maternity', 'Paternity', 'Emergency', 'Other'),
+        type: DataTypes.ENUM('Annual', 'Sick', 'Maternity', 'Paternity', 'Emergency'),
         allowNull: false,
     },
     reason: { type: DataTypes.TEXT },
@@ -21,6 +21,7 @@ const LeaveRequest = sequelize.define('LeaveRequest', {
     },
     supervisorName: { type: DataTypes.STRING },
     supervisorComment: { type: DataTypes.TEXT },
+    attachmentUrl: { type: DataTypes.TEXT, allowNull: true },
     branch: { type: DataTypes.ENUM('enkulal fabrica', 'bole center'), allowNull: true },
 }, { tableName: 'leave_requests', timestamps: true });
 

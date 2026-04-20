@@ -5,6 +5,9 @@ const Student = sequelize.define('Student', {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     displayId: { type: DataTypes.STRING, allowNull: true, unique: true, field: 'displayid' }, // e.g., STU001
     type: { type: DataTypes.ENUM('trainee', 'child'), defaultValue: 'trainee' },
+    fundingType: { type: DataTypes.ENUM('cost_sharing', 'project_based'), allowNull: true },
+    projectId: { type: DataTypes.UUID, allowNull: true },
+    costSharingAmount: { type: DataTypes.DECIMAL(10, 2), allowNull: true },
     
     // Core Fields (Mainly for Trainee)
     fullName: { type: DataTypes.STRING, allowNull: true },

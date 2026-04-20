@@ -3,9 +3,17 @@ const auditLogService = require('./auditLog.service');
 
 const { Op } = require('sequelize');
 
-const getAll = async ({ page = 1, limit = 10, search = '' }) => {
+const getAll = async ({ page = 1, limit = 10, search = '', year = '' }) => {
   const where = { isDeleted: false };
   if (search) where.name = { [Op.iLike]: `%${search}%` };
+  if (year) {
+    where.creationDate = {
+      [Op.and]: [
+        { [Op.gte]: `${year}-01-01` },
+        { [Op.lte]: `${year}-12-31` }
+      ]
+    };
+  }
   
   // If limit=0, return all records without pagination
   const shouldPaginate = limit !== '0' && limit !== 0;

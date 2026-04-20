@@ -9,6 +9,8 @@ const RefreshToken = require('./RefreshToken');
 const Student = require('./Student');
 const TeachingProgram = require('./TeachingProgram');
 const LeaveRequest = require('./LeaveRequest');
+const Project = require('./Project');
+const Position = require('./Position');
 
 // Role <-> Permission (many-to-many)
 Role.belongsToMany(Permission, { through: 'role_permissions', foreignKey: 'roleId', otherKey: 'permissionId', as: 'permissions' });
@@ -44,6 +46,13 @@ LeaveRequest.belongsTo(Employee, { foreignKey: 'employeeId', as: 'employee' });
 Student.belongsToMany(TeachingProgram, { through: 'student_programs', foreignKey: 'studentId', otherKey: 'programId', as: 'programs' });
 TeachingProgram.belongsToMany(Student, { through: 'student_programs', foreignKey: 'programId', otherKey: 'studentId', as: 'students' });
 
+// Project -> Employee (manager)
+Project.belongsTo(Employee, { foreignKey: 'managerId', as: 'manager' });
+
+// Student -> Project (funding)
+Student.belongsTo(Project, { foreignKey: 'projectId', as: 'project' });
+Project.hasMany(Student, { foreignKey: 'projectId', as: 'students' });
+
 module.exports = {
     sequelize,
     Role,
@@ -55,5 +64,7 @@ module.exports = {
     RefreshToken,
     Student,
     TeachingProgram,
-    LeaveRequest
+    LeaveRequest,
+    Project,
+    Position
 };

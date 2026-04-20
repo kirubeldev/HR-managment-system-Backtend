@@ -272,6 +272,26 @@ const getLeaveTypeDistribution = async (branch = null) => {
     }));
 };
 
+const getVocTraineeGenderDistribution = async (branch = null) => {
+    const where = { isDeleted: false, type: 'trainee', gender: { [Op.not]: null } };
+    if (branch) where.branch = branch;
+
+    const distribution = await Student.findAll({
+        attributes: [
+            'gender',
+            [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+        ],
+        where,
+        group: ['gender'],
+        raw: true
+    });
+
+    return distribution.map(d => ({
+        name: d.gender,
+        count: parseInt(d.count, 10)
+    }));
+};
+
 module.exports = {
     getSummary,
     getEmployeeStatusDistribution,
@@ -281,5 +301,6 @@ module.exports = {
     getStudentTypeDistribution,
     getLeaveRequestsByMonth,
     getEmployeeBranchDistribution,
-    getLeaveTypeDistribution
+    getLeaveTypeDistribution,
+    getVocTraineeGenderDistribution
 };

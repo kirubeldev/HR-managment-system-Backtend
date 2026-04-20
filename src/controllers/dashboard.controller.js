@@ -100,6 +100,14 @@ const getLeaveTypeDistribution = async (req, res, next) => {
     } catch (err) { next(err); }
 };
 
+const getVocTraineeGenderDistribution = async (req, res, next) => {
+    try {
+        const branch = getBranchFilter(req);
+        const data = await dashboardService.getVocTraineeGenderDistribution(branch);
+        res.json({ success: true, data });
+    } catch (err) { next(err); }
+};
+
 module.exports = {
     getSummary,
     getEmployeeByDepartment,
@@ -111,5 +119,6 @@ module.exports = {
     getStudentTypeDistribution,
     getLeaveRequestsByMonth,
     getEmployeeBranchDistribution,
-    getLeaveTypeDistribution
+    getLeaveTypeDistribution,
+    getVocTraineeGenderDistribution
 };

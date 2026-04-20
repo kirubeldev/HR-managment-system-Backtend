@@ -71,6 +71,15 @@ class LeaveRequestController {
             next(error);
         }
     }
+
+    async getBalance(req, res, next) {
+        try {
+            const balance = await LeaveRequestService.getLeaveBalance(req.params.employeeId);
+            res.status(200).json({ success: true, data: balance });
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 module.exports = new LeaveRequestController();
