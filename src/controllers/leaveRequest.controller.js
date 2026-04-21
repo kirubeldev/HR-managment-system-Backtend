@@ -1,10 +1,21 @@
 const LeaveRequestService = require('../services/leaveRequest.service');
+const mockData = require('../services/mockData.service');
 
-const isAdmin = (user) => user?.role?.name?.toLowerCase() === 'administrator';
+const isAdmin = (user) => user?.role?.toLowerCase() === 'administrator' || user?.role?.name?.toLowerCase() === 'administrator';
 
 class LeaveRequestController {
     async getAll(req, res, next) {
         try {
+            // MOCK MODE: Return sample leave requests if mock user
+            if (req.user && req.user.id === 'mock-admin-id') {
+                const mockLeaves = mockData.generateMockLeaveRequests(10);
+                return res.json({ 
+                    success: true, 
+                    data: mockLeaves, 
+                    total: mockLeaves.length 
+                });
+            }
+
             const query = { ...req.query };
             console.log('Controller received query:', req.query);
             if (!isAdmin(req.user)) {

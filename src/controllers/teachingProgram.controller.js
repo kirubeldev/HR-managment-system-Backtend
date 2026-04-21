@@ -1,11 +1,22 @@
 const teachingProgramService = require('../services/teachingProgram.service');
 const auditLogService = require('../services/auditLog.service');
+const mockData = require('../services/mockData.service');
 
-const isAdmin = (user) => user?.role?.name?.toLowerCase() === 'administrator';
+const isAdmin = (user) => user?.role?.toLowerCase() === 'administrator' || user?.role?.name?.toLowerCase() === 'administrator';
 
 class TeachingProgramController {
     async getAll(req, res, next) {
         try {
+            // MOCK MODE: Return sample programs if mock user
+            if (req.user && req.user.id === 'mock-admin-id') {
+                const mockProgs = mockData.generateMockPrograms(10);
+                return res.json({ 
+                    success: true, 
+                    data: mockProgs, 
+                    total: mockProgs.length 
+                });
+            }
+
             let branch = null;
             if (isAdmin(req.user)) {
                 branch = req.query.branch || null; // Admin: optional filter

@@ -7,10 +7,12 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
     ssl: {
       require: true,
       rejectUnauthorized: false,
+      checkServerIdentity: () => null, // Explicitly bypass hostname mismatch for IP connections
     },
+    family: 4,
   },
   logging: false,
-  pool: { max: 5, min: 0, acquire: 60000, idle: 10000 },
+  pool: { max: 5, min: 0, acquire: 10000, idle: 10000 },
 });
 
 module.exports = sequelize;

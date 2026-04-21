@@ -1,7 +1,18 @@
 const positionService = require('../services/position.service');
+const mockData = require('../services/mockData.service');
 
 const getAll = async (req, res, next) => {
   try {
+    // MOCK MODE: Return sample positions if mock user
+    if (req.user && req.user.id === 'mock-admin-id') {
+      const mockPositions = mockData.generateMockPositions();
+      return res.json({ 
+        success: true, 
+        data: mockPositions, 
+        total: mockPositions.length 
+      });
+    }
+
     const result = await positionService.getAll(req.query);
     res.json({ success: true, ...result });
   } catch (err) { next(err); }

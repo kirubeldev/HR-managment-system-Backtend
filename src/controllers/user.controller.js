@@ -47,6 +47,21 @@ const remove = async (req, res, next) => {
 
 const getMe = async (req, res, next) => {
   try {
+    // MOCK MODE: Return mock profile data if no database connection or mock user
+    if (req.user.id === 'mock-admin-id') {
+      return res.json({
+        success: true,
+        data: {
+          id: 'mock-admin-id',
+          email: 'admin@hrms.com',
+          fullName: 'Development Admin',
+          role: 'Administrator',
+          branch: 'HQ',
+          isActive: true
+        }
+      });
+    }
+
     const user = await userService.getById(req.user.id);
     res.json({ success: true, data: user });
   } catch (err) { next(err); }

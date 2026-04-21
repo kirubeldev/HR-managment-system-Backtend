@@ -1,8 +1,19 @@
 const deptService = require('../services/department.service');
 const { createDepartmentSchema, updateDepartmentSchema } = require('../validators/department.validator');
+const mockData = require('../services/mockData.service');
 
 const getAll = async (req, res, next) => {
   try {
+    // MOCK MODE: Return mock departments if mock user
+    if (req.user && req.user.id === 'mock-admin-id') {
+      const mockDepts = mockData.generateMockDepartments();
+      return res.json({ 
+        success: true, 
+        data: mockDepts, 
+        total: mockDepts.length 
+      });
+    }
+
     const result = await deptService.getAll(req.query);
     res.json({ success: true, ...result });
   } catch (err) { next(err); }

@@ -173,4 +173,17 @@ router.get('/activate', ctrl.activateAccount);
  */
 router.get('/test-success', ctrl.testSuccess);
 
+/**
+ * @swagger
+ * /api/auth/seed-database:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Seed all database tables (development only)
+ *     security: []
+ *     responses:
+ *       200:
+ *         description: Database seeded successfully
+ */
+router.post('/seed-database', ctrl.seedDatabase);
+
 module.exports = router;

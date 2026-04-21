@@ -170,4 +170,94 @@ const testSuccess = async (req, res) => {
   });
 };
 
-module.exports = { login, setPassword, refresh, forgotPassword, resetPassword, bootstrapAdmin, activateAccount, testSuccess };
+const seedDatabase = async (req, res) => {
+  try {
+    console.log('🌱 Starting database seeding...');
+    const { Role, Permission, Department, TeachingProgram, sequelize } = require('../models');
+    
+    // 1. Seed Roles
+    const roles = [
+      { id: '11111111-1111-1111-1111-000000000001', name: 'SUPER_ADMIN' },
+      { id: '11111111-1111-1111-1111-000000000002', name: 'ADMINISTRATOR' },
+      { id: '11111111-1111-1111-1111-000000000003', name: 'HR_MANAGER' },
+      { id: '11111111-1111-1111-1111-000000000004', name: 'HR_OFFICER' },
+      { id: '11111111-1111-1111-1111-000000000005', name: 'RECRUITER' },
+      { id: '11111111-1111-1111-1111-000000000006', name: 'PAYROLL_OFFICER' },
+      { id: '11111111-1111-1111-1111-000000000007', name: 'ATTENDANCE_MANAGER' },
+      { id: '11111111-1111-1111-1111-000000000008', name: 'DEPARTMENT_MANAGER' }
+    ];
+    
+    for (const roleData of roles) {
+      await Role.findOrCreate({ where: { id: roleData.id }, defaults: roleData });
+    }
+    console.log('✅ Roles seeded');
+    
+    // 2. Seed Permissions
+    const permissionNames = [
+      'create_user', 'edit_user', 'delete_user', 'view_user',
+      'create_employee', 'edit_employee', 'delete_employee', 'view_employee',
+      'manage_roles', 'manage_permissions',
+      'view_department', 'create_department', 'edit_department', 'delete_department',
+      'view_audit_logs',
+      'view_student', 'create_student', 'edit_student', 'delete_student',
+      'view_program', 'create_program', 'edit_program', 'delete_program'
+    ];
+    
+    for (let i = 0; i < permissionNames.length; i++) {
+      const permId = `p1111111-1111-1111-1111-${String(i).padStart(12, '0')}`;
+      await Permission.findOrCreate({ where: { id: permId }, defaults: { id: permId, name: permissionNames[i] } });
+    }
+    console.log('✅ Permissions seeded');
+    
+    // 3. Assign all permissions to ADMINISTRATOR
+    const adminRole = await Role.findOne({ where: { name: 'ADMINISTRATOR' } });
+    if (adminRole) {
+      const allPerms = await Permission.findAll();
+      await adminRole.setPermissions(allPerms);
+      console.log('✅ Permissions assigned to ADMINISTRATOR');
+    }
+    
+    // 4. Seed Departments
+    const departments = [
+      { id: 'd1111111-1111-1111-1111-000000000001', name: 'Human Resources', location: 'Head Office' },
+      { id: 'd1111111-1111-1111-1111-000000000002', name: 'Finance', location: 'Head Office' },
+      { id: 'd1111111-1111-1111-1111-000000000003', name: 'IT', location: 'Tech Building' },
+      { id: 'd1111111-1111-1111-1111-000000000004', name: 'Operations', location: 'Main Branch' }
+    ];
+    
+    for (const dept of departments) {
+      await Department.findOrCreate({ where: { id: dept.id }, defaults: dept });
+    }
+    console.log('✅ Departments seeded');
+    
+    // 5. Seed Teaching Programs
+    const programs = [
+      { id: 'prog1111-1111-1111-1111-000000000001', name: 'Computer Science', description: 'BS in CS', duration: '4 years', status: 'active' },
+      { id: 'prog1111-1111-1111-1111-000000000002', name: 'Business Admin', description: 'BBA', duration: '4 years', status: 'active' }
+    ];
+    
+    for (const prog of programs) {
+      await TeachingProgram.findOrCreate({ where: { id: prog.id }, defaults: prog });
+    }
+    console.log('✅ Teaching Programs seeded');
+    
+    res.json({ 
+      success: true, 
+      message: 'Database seeded successfully',
+      details: {
+        roles: 8,
+        permissions: permissionNames.length,
+        departments: 4,
+        programs: 2
+      }
+    });
+  } catch (err) {
+    console.error('Seeding error:', err);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error seeding database: ' + err.message 
+    });
+  }
+};
+
+module.exports = { login, setPassword, refresh, forgotPassword, resetPassword, bootstrapAdmin, activateAccount, testSuccess, seedDatabase };

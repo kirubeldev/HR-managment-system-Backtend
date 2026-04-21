@@ -1,7 +1,18 @@
 const projectService = require('../services/project.service');
+const mockData = require('../services/mockData.service');
 
 const getAll = async (req, res, next) => {
   try {
+    // MOCK MODE: Return sample projects if mock user
+    if (req.user && req.user.id === 'mock-admin-id') {
+      const mockProjects = mockData.generateMockProjects(10);
+      return res.json({ 
+        success: true, 
+        data: mockProjects, 
+        total: mockProjects.length 
+      });
+    }
+
     const result = await projectService.getAll(req.query);
     res.json({ success: true, ...result });
   } catch (err) { next(err); }

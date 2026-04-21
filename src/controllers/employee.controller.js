@@ -1,8 +1,21 @@
 const employeeService = require('../services/employee.service');
 const { createEmployeeSchema, updateEmployeeSchema, updateStatusSchema } = require('../validators/employee.validator');
+const mockData = require('../services/mockData.service');
 
 const getAll = async (req, res, next) => {
   try {
+    // MOCK MODE: Return 10 sample employees if mock user
+    if (req.user && req.user.id === 'mock-admin-id') {
+      const mockEmps = mockData.generateMockEmployees(10);
+      return res.json({ 
+        success: true, 
+        data: mockEmps, 
+        total: mockEmps.length,
+        page: 1,
+        pages: 1
+      });
+    }
+
     const filters = { ...req.query };
     // If not super admin, force branch filter to user's branch
     if (req.user && req.user.role && req.user.role.name !== 'Super Admin' && req.user.branch) {

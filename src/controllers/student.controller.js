@@ -1,11 +1,22 @@
 const studentService = require('../services/student.service');
 const auditLogService = require('../services/auditLog.service');
+const mockData = require('../services/mockData.service');
 
-const isAdmin = (user) => user?.role?.name?.toLowerCase() === 'administrator';
+const isAdmin = (user) => user?.role?.toLowerCase() === 'administrator' || user?.role?.name?.toLowerCase() === 'administrator';
 
 class StudentController {
     async getAll(req, res, next) {
         try {
+            // MOCK MODE: Return sample students if mock user
+            if (req.user && req.user.id === 'mock-admin-id') {
+                const mockStudents = mockData.generateMockStudents(10);
+                return res.json({ 
+                    success: true, 
+                    data: mockStudents, 
+                    total: mockStudents.length 
+                });
+            }
+
             const query = { ...req.query };
             
             // Branch isolation for non-admins
