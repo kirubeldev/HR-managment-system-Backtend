@@ -11,4 +11,22 @@ const assignToRole = async (roleId, permissionIds, actorId) => {
   return role.getPermissions();
 };
 
-module.exports = { getAll, assignToRole };
+const getPositionsWithPermissions = async () => {
+  const { Position } = require('../models');
+  return Position.findAll({
+    where: { isDeleted: false },
+    include: [{ model: Permission, as: 'permissions' }],
+    order: [['title', 'ASC']],
+  });
+};
+
+const assignToPosition = async (positionId, permissionIds, actorId) => {
+  const { Position } = require('../models');
+  const position = await Position.findOne({ where: { id: positionId, isDeleted: false } });
+  if (!position) throw Object.assign(new Error('Position not found'), { status: 404 });
+  await position.setPermissions(permissionIds);
+  await auditLogService.log(actorId, 'UPDATE', 'position_permissions', positionId, { permissionIds });
+  return position.getPermissions();
+};
+
+module.exports = { getAll, assignToRole, getPositionsWithPermissions, assignToPosition };

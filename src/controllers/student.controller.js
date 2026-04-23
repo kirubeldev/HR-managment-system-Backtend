@@ -2,7 +2,7 @@ const studentService = require('../services/student.service');
 const auditLogService = require('../services/auditLog.service');
 const mockData = require('../services/mockData.service');
 
-const isAdmin = (user) => user?.role?.toLowerCase() === 'administrator' || user?.role?.name?.toLowerCase() === 'administrator';
+const isAdmin = (user) => user?.role?.name?.toLowerCase() === 'administrator';
 
 class StudentController {
     async getAll(req, res, next) {

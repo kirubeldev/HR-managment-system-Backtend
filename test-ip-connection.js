@@ -18,6 +18,7 @@ const client = new Client({
   } catch (err) {
     console.error('❌ Failed:', err.message);
   } finally {
+    
     await client.end();
   }
 })();

@@ -5,6 +5,7 @@ const createDepartmentSchema = Joi.object({
   description: Joi.string().allow(null, ''),
   managerId: Joi.string().uuid().allow(null, ''),
   creationDate: Joi.string().isoDate().allow(null, ''),
+  endDate: Joi.string().isoDate().allow(null, ''),
 });
 
 const updateDepartmentSchema = createDepartmentSchema.fork(['name'], (s) => s.optional());

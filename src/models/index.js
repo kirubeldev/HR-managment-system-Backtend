@@ -53,6 +53,10 @@ Project.belongsTo(Employee, { foreignKey: 'managerId', as: 'manager' });
 Student.belongsTo(Project, { foreignKey: 'projectId', as: 'project' });
 Project.hasMany(Student, { foreignKey: 'projectId', as: 'students' });
 
+// Position <-> Permission (many-to-many)
+Position.belongsToMany(Permission, { through: 'position_permissions', foreignKey: 'positionId', otherKey: 'permissionId', as: 'permissions' });
+Permission.belongsToMany(Position, { through: 'position_permissions', foreignKey: 'permissionId', otherKey: 'positionId', as: 'positions' });
+
 module.exports = {
     sequelize,
     Role,

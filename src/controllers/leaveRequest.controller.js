@@ -1,7 +1,7 @@
 const LeaveRequestService = require('../services/leaveRequest.service');
 const mockData = require('../services/mockData.service');
 
-const isAdmin = (user) => user?.role?.toLowerCase() === 'administrator' || user?.role?.name?.toLowerCase() === 'administrator';
+const isAdmin = (user) => user?.role?.name?.toLowerCase() === 'administrator';
 
 class LeaveRequestController {
     async getAll(req, res, next) {

@@ -29,7 +29,7 @@ class LeaveRequestService {
             {
                 model: Employee,
                 as: 'employee',
-                attributes: ['id', 'firstName', 'lastName', 'profileImageUrl', 'position', 'branch']
+                attributes: ['id', 'firstName', 'lastName', 'profileImageUrl', 'position', 'branch', 'hireDate']
             }
         ];
 
@@ -101,13 +101,6 @@ class LeaveRequestService {
                     model: Employee,
                     as: 'employee',
                     attributes: ['id', 'firstName', 'lastName', 'profileImageUrl', 'position', 'branch', 'email', 'hireDate'],
-                    include: [
-                        {
-                            model: Role,
-                            as: 'role',
-                            attributes: ['id', 'name']
-                        }
-                    ]
                 }
             ]
         });
@@ -117,7 +110,19 @@ class LeaveRequestService {
 
     async create(data) {
         const employee = await Employee.findByPk(data.employeeId);
-        const branch = employee ? employee.branch : null;
+        if (!employee) throw Object.assign(new Error('Employee not found'), { status: 404 });
+
+        // Balance check — only for Annual leave type (others like Sick/Emergency are not balance-limited)
+        const totalDays = Number(data.totalDays) || 0;
+        const balance = await this.getLeaveBalance(data.employeeId);
+        if (totalDays > balance.available) {
+            throw Object.assign(
+                new Error(`Insufficient leave balance. Requested ${totalDays} days but only ${balance.available} days available.`),
+                { status: 400 }
+            );
+        }
+
+        const branch = employee.branch;
         const displayId = await generateDisplayId('LEAVE');
         return await LeaveRequest.create({ ...data, branch, displayId });
     }
@@ -155,23 +160,36 @@ class LeaveRequestService {
     async getLeaveBalance(employeeId) {
         const employee = await Employee.findByPk(employeeId);
         if (!employee) throw new Error('Employee not found');
-        
+
         const hireDate = new Date(employee.hireDate);
         const now = new Date();
-        
-        // Calculate years of service (including partial year — at least 1)
-        const yearsOfService = Math.max(1, Math.ceil((now - hireDate) / (365.25 * 24 * 60 * 60 * 1000)));
-        
-        // 15 days per year, accumulated and carried over
+
+        // Edge case: future hire date
+        if (hireDate > now) {
+            return {
+                employeeId,
+                employeeName: `${employee.firstName} ${employee.lastName}`,
+                hireDate: employee.hireDate,
+                yearsOfService: 0,
+                totalEntitlement: 0,
+                totalTaken: 0,
+                available: 0,
+            };
+        }
+
+        // Full years completed + current partial year (each started year = 15 days)
+        const msPerYear = 365.25 * 24 * 60 * 60 * 1000;
+        const exactYears = (now - hireDate) / msPerYear;
+        const yearsOfService = Math.max(1, Math.ceil(exactYears));
         const totalEntitlement = yearsOfService * 15;
-        
-        // Sum approved leave days
-        const totalTaken = await LeaveRequest.sum('totalDays', {
-            where: { employeeId, status: 'Approved' }
-        }) || 0;
-        
-        const available = totalEntitlement - totalTaken;
-        
+
+        // Only count Approved leave days
+        const totalTaken = (await LeaveRequest.sum('totalDays', {
+            where: { employeeId, status: 'Approved' },
+        })) || 0;
+
+        const available = Math.max(0, totalEntitlement - totalTaken);
+
         return {
             employeeId,
             employeeName: `${employee.firstName} ${employee.lastName}`,
@@ -179,12 +197,13 @@ class LeaveRequestService {
             yearsOfService,
             totalEntitlement,
             totalTaken,
-            available: Math.max(0, available)
+            available,
         };
     }
 
     async delete(id) {
-        const leave = await this.getById(id);
+        const leave = await LeaveRequest.findByPk(id);
+        if (!leave) throw Object.assign(new Error('Leave request not found'), { status: 404 });
         await leave.destroy();
         return { success: true };
     }

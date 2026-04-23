@@ -50,10 +50,18 @@ const getById = async (id) => {
 const create = async (data, actorId) => {
   const existing = await Employee.findOne({ where: { email: data.email, isDeleted: false } });
   if (existing) throw Object.assign(new Error('Email already in use'), { status: 409 });
-  
+
+  // Reject ended departments
+  if (data.departmentId) {
+    const dept = await Department.findOne({ where: { id: data.departmentId, isDeleted: false } });
+    if (dept && dept.endDate && new Date(dept.endDate) < new Date()) {
+      throw Object.assign(new Error('Cannot assign employee to an ended department'), { status: 400 });
+    }
+  }
+
   // Generate unique display ID
   const displayId = await generateDisplayId('EMPLOYEE');
-  
+
   const emp = await Employee.create({ ...data, displayId });
   await auditLogService.log(actorId, 'CREATE', 'employee', emp.id, { email: data.email, displayId });
   return emp;
@@ -62,6 +70,15 @@ const create = async (data, actorId) => {
 const update = async (id, data, actorId) => {
   const emp = await Employee.findOne({ where: { id, isDeleted: false } });
   if (!emp) throw Object.assign(new Error('Employee not found'), { status: 404 });
+
+  // Reject ended departments
+  if (data.departmentId) {
+    const dept = await Department.findOne({ where: { id: data.departmentId, isDeleted: false } });
+    if (dept && dept.endDate && new Date(dept.endDate) < new Date()) {
+      throw Object.assign(new Error('Cannot assign employee to an ended department'), { status: 400 });
+    }
+  }
+
   await emp.update(data);
   await auditLogService.log(actorId, 'UPDATE', 'employee', id, data);
   return emp;

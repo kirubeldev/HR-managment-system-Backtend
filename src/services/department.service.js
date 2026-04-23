@@ -3,7 +3,7 @@ const auditLogService = require('./auditLog.service');
 
 const { Op } = require('sequelize');
 
-const getAll = async ({ page = 1, limit = 10, search = '', year = '' }) => {
+const getAll = async ({ page = 1, limit = 10, search = '', year = '', sortField = 'createdAt', sortOrder = 'DESC' }) => {
   const where = { isDeleted: false };
   if (search) where.name = { [Op.iLike]: `%${search}%` };
   if (year) {
@@ -17,10 +17,15 @@ const getAll = async ({ page = 1, limit = 10, search = '', year = '' }) => {
   
   // If limit=0, return all records without pagination
   const shouldPaginate = limit !== '0' && limit !== 0;
+
+  const validSortFields = ['createdAt', 'creationDate', 'endDate', 'name'];
+  const actualSortField = validSortFields.includes(sortField) ? sortField : 'createdAt';
+  const actualSortOrder = sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
   const queryOptions = {
     where,
     include: [{ model: Employee, as: 'manager', attributes: ['id', 'firstName', 'lastName'] }],
-    order: [['createdAt', 'DESC']],
+    order: [[actualSortField, actualSortOrder]],
   };
   
   if (shouldPaginate) {

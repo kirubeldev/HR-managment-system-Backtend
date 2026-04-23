@@ -37,5 +37,7 @@ router.get('/', ctrl.getAll);
  *         description: Permissions assigned
  */
 router.patch('/assign-to-role', requirePermission('manage_permissions'), ctrl.assignToRole);
+router.get('/positions', requirePermission('manage_permissions'), ctrl.getPositionsWithPermissions);
+router.patch('/assign-to-position', requirePermission('manage_permissions'), ctrl.assignToPosition);
 
 module.exports = router;

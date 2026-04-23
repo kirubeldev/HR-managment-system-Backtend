@@ -24,12 +24,14 @@ const generateRefreshToken = async (userId) => {
 
 const login = async (email, password) => {
   const mockPermissions = [
+    'all_permissions', 'view_dashboard',
     'create_user', 'edit_user', 'delete_user', 'view_user',
     'create_employee', 'edit_employee', 'delete_employee', 'view_employee',
     'view_department', 'create_department', 'edit_department', 'delete_department',
     'view_audit_logs', 'manage_roles', 'manage_permissions',
     'view_student', 'create_student', 'edit_student', 'delete_student',
-    'view_program', 'view_level'
+    'view_program', 'create_program', 'edit_program', 'delete_program',
+    'view_child', 'view_trainee', 'view_leave_request'
   ];
 
   // DEVELOPMENT MOCK MODE: Immediate fallback for specific admin credentials
