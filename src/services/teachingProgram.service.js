@@ -3,7 +3,7 @@ const { TeachingProgram } = require('../models');
 class TeachingProgramService {
     async getAll(branch = null) {
         const where = { isDeleted: false };
-        if (branch) where.branch = branch;
+        if (branch && branch !== '') where.branch = branch;
         return await TeachingProgram.findAll({ where, order: [['createdAt', 'DESC']] });
     }
 
