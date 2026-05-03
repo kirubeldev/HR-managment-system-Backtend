@@ -64,13 +64,22 @@ const login = async (email, password) => {
       where: { email, isDeleted: false },
       include: [{ model: Role, as: 'role', include: [{ model: Permission, as: 'permissions' }] }],
     });
-    if (!user) throw Object.assign(new Error('Invalid credentials'), { status: 401 });
+    
+    if (!user) {
+      console.log(`❌ User not found: ${email}`);
+      throw Object.assign(new Error('Invalid credentials'), { status: 401 });
+    }
+
     if (!user.isActive && user.role.name !== 'Administrator') {
+      console.log(`❌ User account not active: ${email}`);
       throw Object.assign(new Error('Account not activated. Please check your email or use the activation link.'), { status: 403 });
     }
 
     const valid = await user.validatePassword(password);
-    if (!valid) throw Object.assign(new Error('Invalid credentials'), { status: 401 });
+    if (!valid) {
+      console.log(`❌ Invalid password for user: ${email}`);
+      throw Object.assign(new Error('Invalid credentials'), { status: 401 });
+    }
 
     const accessToken = generateAccessToken(user);
     const refreshToken = await generateRefreshToken(user.id);

@@ -17,13 +17,13 @@ class TeachingProgramController {
                 });
             }
 
-            let branch = null;
+            const filters = { ...req.query };
             if (isAdmin(req.user)) {
-                branch = req.query.branch || null; // Admin: optional filter
+                if (req.query.branch) filters.branch = req.query.branch;
             } else {
-                branch = req.user?.branch || null; // Non-admin: locked to their branch
+                filters.branch = req.user?.branch || null;
             }
-            const programs = await teachingProgramService.getAll(branch);
+            const programs = await teachingProgramService.getAll(filters);
             res.json(programs);
         } catch (err) {
             next(err);

@@ -5,8 +5,9 @@ const createDepartmentSchema = Joi.object({
   description: Joi.string().allow(null, ''),
   managerId: Joi.string().uuid().allow(null, ''),
   creationDate: Joi.string().isoDate().allow(null, ''),
-  endDate: Joi.string().isoDate().allow(null, ''),
+  endDate: Joi.date().max('now').allow(null, ''),
   branch: Joi.string().valid('enkulal fabrica', 'bole center').allow(null, ''),
+  status: Joi.string().valid('active', 'inactive').allow(null, ''),
 });
 
 const updateDepartmentSchema = createDepartmentSchema.fork(['name'], (s) => s.optional());

@@ -1,9 +1,15 @@
 const { TeachingProgram } = require('../models');
 
 class TeachingProgramService {
-    async getAll(branch = null) {
+    async getAll(filters = {}) {
+        const { branch = null, status = '', search = '' } = filters;
         const where = { isDeleted: false };
         if (branch && branch !== '') where.branch = branch;
+        if (status && status !== '') where.status = status;
+        if (search && search !== '') {
+            const { Op } = require('sequelize');
+            where.name = { [Op.iLike]: `%${search}%` };
+        }
         return await TeachingProgram.findAll({ where, order: [['createdAt', 'DESC']] });
     }
 
