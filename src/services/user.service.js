@@ -79,7 +79,7 @@ const create = async (data, actorId) => {
   const resetTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
   const user = await User.create({ email, name, displayId, passwordHash: tempPasswordHash, roleId, resetToken, resetTokenExpiry, isActive: false, branch });
-  await emailService.sendResetLink(email, resetToken);
+  emailService.sendResetLink(email, resetToken).catch(err => console.error('Failed to send reset link:', err));
   await auditLogService.log(actorId, 'CREATE', 'user', user.id, { email, displayId });
   return { id: user.id, email: user.email, displayId: user.displayId, message: 'User created. Activation email sent.' };
 };

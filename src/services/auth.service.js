@@ -145,7 +145,7 @@ const forgotPassword = async (email) => {
   await user.update({ otp, otpExpiry });
 
   try {
-    await emailService.sendOTPEmail(email, otp);
+    emailService.sendOTPEmail(email, otp).catch(err => console.error('Failed to send OTP:', err));
   } catch (err) {
     console.log('📧 Password Reset Email Error:', err.message);
     throw Object.assign(new Error('User found and OTP generated, but email service is currently unavailable. Please contact support or try again later.'), { status: 503 });
