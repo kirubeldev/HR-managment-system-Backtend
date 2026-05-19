@@ -1,16 +1,22 @@
 const nodemailer = require('nodemailer');
 
-const transporter = nodemailer.createTransport({
+const createTransporter = () => nodemailer.createTransport({
   host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT) || 465,
-  secure: Number(process.env.SMTP_PORT) === 465, // true for port 465, false for other ports (like 587)
+  port: Number(process.env.SMTP_PORT) || 587,
+  secure: false, // must be false for port 587 (STARTTLS)
   auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-  connectionTimeout: 15000, // 15 seconds
-  greetingTimeout: 15000,   // 15 seconds
-  socketTimeout: 15000      // 15 seconds
+  tls: {
+    rejectUnauthorized: false, // required on some cloud providers (Render, Railway, etc.)
+  },
+  connectionTimeout: 30000, // 30 seconds for cold starts
+  greetingTimeout: 30000,
+  socketTimeout: 30000,
 });
 
-transporter.verify((error, success) => {
+// Lazy transporter — created fresh per send to avoid stale connections on Render
+const transporter = createTransporter();
+
+transporter.verify((error) => {
   if (error) {
     console.log('📧 SMTP Connection Error:', error.message);
   } else {
@@ -20,7 +26,7 @@ transporter.verify((error, success) => {
 
 const sendResetLink = async (to, token) => {
   const link = `${process.env.FRONTEND_URL}/set-password?token=${token}`;
-  await transporter.sendMail({
+  await createTransporter().sendMail({
     from: `"HRMS Admin" <${process.env.SMTP_USER}>`,
     to,
     subject: 'Set Your HRMS Account Password',
@@ -36,7 +42,7 @@ const sendResetLink = async (to, token) => {
 };
 
 const sendOTPEmail = async (to, otp) => {
-  await transporter.sendMail({
+  await createTransporter().sendMail({
     from: `"HRMS Admin" <${process.env.SMTP_USER}>`,
     to,
     subject: 'Password Reset OTP - HRMS',
@@ -63,7 +69,7 @@ const sendActivationEmail = async (to, activationToken) => {
   
   const link = `${baseUrl}/activate?token=${activationToken}`;
   
-  await transporter.sendMail({
+  await createTransporter().sendMail({
     from: `"HRMS Admin" <${process.env.SMTP_USER}>`,
     to,
     subject: 'Activate Your HRMS Account',
@@ -84,7 +90,7 @@ const sendLeaveStatusEmail = async (to, employeeName, status, leaveDetails) => {
   const statusColor = status === 'Approved' ? '#22c55e' : '#ef4444';
   const statusIcon = status === 'Approved' ? '✅' : '❌';
   
-  await transporter.sendMail({
+  await createTransporter().sendMail({
     from: `"HRMS Admin" <${process.env.SMTP_USER}>`,
     to,
     subject: `Leave Request ${status} - HRMS`,
