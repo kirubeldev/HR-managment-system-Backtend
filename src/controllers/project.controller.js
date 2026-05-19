@@ -13,7 +13,13 @@ const getAll = async (req, res, next) => {
       });
     }
 
-    const result = await projectService.getAll(req.query);
+    const filters = { ...req.query };
+    // If not admin, lock to user's branch
+    const isAdmin = req.user?.role?.name?.toLowerCase().includes('admin');
+    if (!isAdmin && req.user?.branch) {
+      filters.branch = req.user.branch;
+    }
+    const result = await projectService.getAll(filters);
     res.json({ success: true, ...result });
   } catch (err) { next(err); }
 };

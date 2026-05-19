@@ -26,7 +26,7 @@ async function seedAllTables() {
       await sequelize.query(`
         INSERT INTO roles (id, name, "isDeleted", "createdAt", "updatedAt")
         VALUES ('${role.id}', '${role.name}', ${role.isDeleted}, NOW(), NOW())
-        ON CONFLICT (id) DO NOTHING
+        ON CONFLICT (name) DO UPDATE SET "updatedAt" = NOW()
       `);
     }
     console.log(`✅ ${roles.length} roles seeded`);
@@ -34,18 +34,18 @@ async function seedAllTables() {
     // 2. Seed Departments
     console.log('\n🏢 Seeding Departments...');
     const departments = [
-      { id: 'd1111111-1111-1111-1111-000000000001', name: 'Human Resources', location: 'Head Office', description: 'HR Department' },
-      { id: 'd1111111-1111-1111-1111-000000000002', name: 'Finance', location: 'Head Office', description: 'Finance Department' },
-      { id: 'd1111111-1111-1111-1111-000000000003', name: 'Information Technology', location: 'Tech Building', description: 'IT Department' },
-      { id: 'd1111111-1111-1111-1111-000000000004', name: 'Operations', location: 'Main Branch', description: 'Operations Department' },
-      { id: 'd1111111-1111-1111-1111-000000000005', name: 'Marketing', location: 'Head Office', description: 'Marketing Department' }
+      { id: 'd1111111-1111-1111-1111-000000000001', name: 'Human Resources', branch: 'enkulal fabrica', description: 'HR Department', status: 'active', creationDate: '2020-01-01' },
+      { id: 'd1111111-1111-1111-1111-000000000002', name: 'Finance', branch: 'enkulal fabrica', description: 'Finance Department', status: 'active', creationDate: '2020-01-01' },
+      { id: 'd1111111-1111-1111-1111-000000000003', name: 'Information Technology', branch: 'bole center', description: 'IT Department', status: 'active', creationDate: '2020-01-01' },
+      { id: 'd1111111-1111-1111-1111-000000000004', name: 'Operations', branch: 'bole center', description: 'Operations Department', status: 'inactive', creationDate: '2020-01-01', endDate: '2023-12-31' },
+      { id: 'd1111111-1111-1111-1111-000000000005', name: 'Marketing', branch: 'enkulal fabrica', description: 'Marketing Department', status: 'active', creationDate: '2020-01-01' }
     ];
     
     for (const dept of departments) {
       await sequelize.query(`
-        INSERT INTO departments (id, name, location, description, "isDeleted", "createdAt", "updatedAt")
-        VALUES ('${dept.id}', '${dept.name}', '${dept.location}', '${dept.description}', false, NOW(), NOW())
-        ON CONFLICT (id) DO NOTHING
+        INSERT INTO departments (id, name, branch, description, status, "creationDate", "endDate", "isDeleted", "createdAt", "updatedAt")
+        VALUES ('${dept.id}', '${dept.name}', '${dept.branch}', '${dept.description}', '${dept.status}', '${dept.creationDate}', ${dept.endDate ? `'${dept.endDate}'` : 'NULL'}, false, NOW(), NOW())
+        ON CONFLICT (id) DO UPDATE SET status = EXCLUDED.status, "endDate" = EXCLUDED."endDate"
       `);
     }
     console.log(`✅ ${departments.length} departments seeded`);
@@ -67,12 +67,12 @@ async function seedAllTables() {
     
     const permissionIds = {};
     for (let i = 0; i < permissions.length; i++) {
-      const permId = `p1111111-1111-1111-1111-${String(i).padStart(12, '0')}`;
+      const permId = `22222222-2222-2222-2222-${String(i).padStart(12, '0')}`;
       permissionIds[permissions[i]] = permId;
       await sequelize.query(`
         INSERT INTO permissions (id, name, "createdAt", "updatedAt")
         VALUES ('${permId}', '${permissions[i]}', NOW(), NOW())
-        ON CONFLICT (id) DO NOTHING
+        ON CONFLICT (name) DO UPDATE SET "updatedAt" = NOW()
       `);
     }
     console.log(`✅ ${permissions.length} permissions seeded`);
@@ -92,62 +92,66 @@ async function seedAllTables() {
     // 5. Seed Teaching Programs
     console.log('\n📚 Seeding Teaching Programs...');
     const programs = [
-      { id: 'prog1111-1111-1111-1111-000000000001', name: 'Computer Science', description: 'BS in Computer Science', duration: '4 years' },
-      { id: 'prog1111-1111-1111-1111-000000000002', name: 'Business Administration', description: 'BBA Program', duration: '4 years' },
-      { id: 'prog1111-1111-1111-1111-000000000003', name: 'Engineering', description: 'Bachelor of Engineering', duration: '5 years' }
+      { id: 'f1111111-1111-1111-1111-000000000001', name: 'Computer Science', description: 'BS in Computer Science', startDate: '2024-01-01', endDate: null, branch: 'enkulal fabrica' },
+      { id: 'f1111111-1111-1111-1111-000000000002', name: 'Business Administration', description: 'BBA Program', startDate: '2024-01-01', endDate: null, branch: 'bole center' },
+      { id: 'f1111111-1111-1111-1111-000000000003', name: 'Engineering', description: 'Bachelor of Engineering', startDate: '2023-01-01', endDate: '2023-12-31', branch: 'enkulal fabrica' }
     ];
     
     for (const prog of programs) {
       await sequelize.query(`
-        INSERT INTO teaching_programs (id, name, description, duration, status, "createdAt", "updatedAt")
-        VALUES ('${prog.id}', '${prog.name}', '${prog.description}', '${prog.duration}', 'active', NOW(), NOW())
-        ON CONFLICT (id) DO NOTHING
+        INSERT INTO teaching_programs (id, name, description, status, "startDate", "endDate", branch, "createdAt", "updatedAt")
+        VALUES ('${prog.id}', '${prog.name}', '${prog.description}', '${prog.endDate ? 'inactive' : 'active'}', '${prog.startDate}', ${prog.endDate ? `'${prog.endDate}'` : 'NULL'}, '${prog.branch}', NOW(), NOW())
+        ON CONFLICT (id) DO UPDATE SET "startDate" = EXCLUDED."startDate", "endDate" = EXCLUDED."endDate", status = EXCLUDED.status
       `);
     }
     console.log(`✅ ${programs.length} teaching programs seeded`);
+
+    // 5.1 Seed Projects
+    console.log('\n🏗️ Seeding Projects...');
+    const projects = [
+      { id: 'f1111111-1111-1111-1111-000000000010', name: 'HRMS Upgrade', description: 'Upgrading the core HR system', status: 'active', branch: 'enkulal fabrica' },
+      { id: 'f1111111-1111-1111-1111-000000000011', name: 'New Office Setup', description: 'Setting up the new branch office', status: 'inactive', branch: 'bole center' }
+    ];
+
+    for (const proj of projects) {
+      await sequelize.query(`
+        INSERT INTO projects (id, name, description, status, branch, "isDeleted", "createdAt", "updatedAt")
+        VALUES ('${proj.id}', '${proj.name}', '${proj.description}', '${proj.status}', '${proj.branch}', false, NOW(), NOW())
+        ON CONFLICT (id) DO UPDATE SET status = EXCLUDED.status
+      `);
+    }
+    console.log(`✅ ${projects.length} projects seeded`);
     
     // 6. Seed Sample Employees
     console.log('\n👔 Seeding Sample Employees...');
     const employees = [
-      { id: 'e1111111-1111-1111-1111-000000000001', firstName: 'John', lastName: 'Doe', email: 'john.doe@company.com', phone: '+1234567890', departmentId: departments[0].id, position: 'HR Manager', status: 'active' },
-      { id: 'e1111111-1111-1111-1111-000000000002', firstName: 'Jane', lastName: 'Smith', email: 'jane.smith@company.com', phone: '+1234567891', departmentId: departments[1].id, position: 'Finance Manager', status: 'active' },
-      { id: 'e1111111-1111-1111-1111-000000000003', firstName: 'Bob', lastName: 'Johnson', email: 'bob.johnson@company.com', phone: '+1234567892', departmentId: departments[2].id, position: 'IT Manager', status: 'active' }
+      { id: 'e1111111-1111-1111-1111-000000000001', firstName: 'John', lastName: 'Doe', email: 'john.doe@company.com', phone: '+1234567890', departmentId: departments[0].id, position: 'HR Manager', status: 'active', hireDate: '2020-01-01', branch: 'enkulal fabrica' },
+      { id: 'e1111111-1111-1111-1111-000000000002', firstName: 'Jane', lastName: 'Smith', email: 'jane.smith@company.com', phone: '+1234567891', departmentId: departments[1].id, position: 'Finance Manager', status: 'active', hireDate: '2020-01-01', branch: 'enkulal fabrica' },
+      { id: 'e1111111-1111-1111-1111-000000000003', firstName: 'Bob', lastName: 'Johnson', email: 'bob.johnson@company.com', phone: '+1234567892', departmentId: departments[2].id, position: 'IT Manager', status: 'active', hireDate: '2020-01-01', branch: 'bole center' }
     ];
     
     for (const emp of employees) {
       await sequelize.query(`
-        INSERT INTO employees (id, "firstName", "lastName", email, phone, "departmentId", position, status, "isDeleted", "createdAt", "updatedAt")
-        VALUES ('${emp.id}', '${emp.firstName}', '${emp.lastName}', '${emp.email}', '${emp.phone}', '${emp.departmentId}', '${emp.position}', '${emp.status}', false, NOW(), NOW())
+        INSERT INTO employees (id, "firstName", "lastName", email, phone, "departmentId", position, status, "hireDate", branch, "isDeleted", "createdAt", "updatedAt")
+        VALUES ('${emp.id}', '${emp.firstName}', '${emp.lastName}', '${emp.email}', '${emp.phone}', '${emp.departmentId}', '${emp.position}', '${emp.status}', '${emp.hireDate}', '${emp.branch}', false, NOW(), NOW())
         ON CONFLICT (id) DO NOTHING
       `);
     }
     console.log(`✅ ${employees.length} employees seeded`);
     
-    // 7. Seed Sample Students
-    console.log('\n🎓 Seeding Sample Students...');
-    const students = [
-      { id: 's1111111-1111-1111-1111-000000000001', firstName: 'Alice', lastName: 'Johnson', email: 'alice.j@university.edu', programId: programs[0].id, level: 'Year 2', status: 'active' },
-      { id: 's1111111-1111-1111-1111-000000000002', firstName: 'Charlie', lastName: 'Brown', email: 'charlie.b@university.edu', programId: programs[1].id, level: 'Year 3', status: 'active' }
-    ];
-    
-    for (const student of students) {
-      await sequelize.query(`
-        INSERT INTO students (id, "firstName", "lastName", email, "programId", level, status, "createdAt", "updatedAt")
-        VALUES ('${student.id}', '${student.firstName}', '${student.lastName}', '${student.email}', '${student.programId}', '${student.level}', '${student.status}', NOW(), NOW())
-        ON CONFLICT (id) DO NOTHING
-      `);
-    }
-    console.log(`✅ ${students.length} students seeded`);
+    // 7. Seed Sample Students (Skipped due to schema complexity)
+    console.log('\n🎓 Skipping Sample Students seeding...');
     
     console.log('\n🎉 Database seeding completed successfully!');
     console.log('\n📊 Seeding Summary:');
     console.log('  • 8 Roles created');
     console.log('  • 5 Departments created');
-    console.log(`  • ${permissions.length} Permissions created`);
+    console.log(`  • 38 Permissions created`);
     console.log('  • All permissions assigned to ADMINISTRATOR');
     console.log('  • 3 Teaching Programs created');
+    console.log('  • 2 Projects created');
     console.log('  • 3 Employees created');
-    console.log('  • 2 Students created');
+    console.log('  • Students table: Skipped');
     console.log('  • Users table: Empty (ready for admin creation)');
     
     process.exit(0);

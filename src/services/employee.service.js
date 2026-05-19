@@ -13,7 +13,7 @@ const getAll = async ({ page = 1, limit = 10, search = '', status = '', departme
   ];
   if (status) where.status = status;
   if (departmentId) where.departmentId = departmentId;
-  if (branch) where.branch = branch;
+  if (branch && branch !== '') where.branch = branch;
   if (gender) where.gender = gender;
   
   // If limit=0, return all records without pagination

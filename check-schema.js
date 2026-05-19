@@ -1,13 +1,14 @@
 const { sequelize } = require('./src/models');
 
-async function check() {
+async function checkSchema() {
   try {
-    const [rs] = await sequelize.query("SELECT column_name FROM information_schema.columns WHERE table_name = 'users'");
-    console.log('EXACT_COLUMNS:', JSON.stringify(rs.map(r => r.column_name)));
-  } catch (e) {
-    console.log('ERROR:', e.message);
+    const [results] = await sequelize.query("SELECT column_name FROM information_schema.columns WHERE table_name = 'departments'");
+    console.log('Columns in departments:', results.map(r => r.column_name));
+    process.exit(0);
+  } catch (err) {
+    console.error(err);
+    process.exit(1);
   }
-  process.exit(0);
 }
 
-check();
+checkSchema();

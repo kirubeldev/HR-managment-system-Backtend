@@ -3,10 +3,11 @@ const auditLogService = require('./auditLog.service');
 
 const { Op } = require('sequelize');
 
-const getAll = async ({ page = 1, limit = 10, search = '', year = '', sortField = 'createdAt', sortOrder = 'DESC', branch = '' }) => {
+const getAll = async ({ page = 1, limit = 10, search = '', year = '', branch = '', status = '', sortField = 'createdAt', sortOrder = 'DESC' }) => {
   const where = { isDeleted: false };
   if (search) where.name = { [Op.iLike]: `%${search}%` };
-  if (branch) where.branch = branch;
+  if (branch && branch !== '') where.branch = branch;
+  if (status && status !== '') where.status = status;
   if (year) {
     where.creationDate = {
       [Op.and]: [

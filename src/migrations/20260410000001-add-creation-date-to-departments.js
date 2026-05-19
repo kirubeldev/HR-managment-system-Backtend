@@ -2,13 +2,17 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    // Add creationDate column
-    await queryInterface.addColumn('departments', 'creationDate', {
-      type: Sequelize.DATEONLY,
-      allowNull: true
-    });
-    
-    console.log('✅ Added creationDate column to departments table');
+    // Check if column exists first
+    const tableInfo = await queryInterface.describeTable('departments');
+    if (!tableInfo.creationDate) {
+      await queryInterface.addColumn('departments', 'creationDate', {
+        type: Sequelize.DATEONLY,
+        allowNull: true
+      });
+      console.log('✅ Added creationDate column to departments table');
+    } else {
+      console.log('ℹ️ creationDate column already exists, skipping');
+    }
   },
 
   down: async (queryInterface, Sequelize) => {

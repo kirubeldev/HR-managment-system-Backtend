@@ -5,7 +5,7 @@ const { Op } = require('sequelize');
 const getAll = async ({ page = 1, limit = 10, search = '', branch = '' }) => {
   const where = { isDeleted: false };
   if (search) where.title = { [Op.iLike]: `%${search}%` };
-  if (branch) where.branch = branch;
+  if (branch && branch !== '') where.branch = branch;
 
   const shouldPaginate = limit !== '0' && limit !== 0;
   const queryOptions = {
