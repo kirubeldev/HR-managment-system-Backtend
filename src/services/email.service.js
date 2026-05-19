@@ -1,33 +1,18 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-const createTransporter = () => nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT) || 587,
-  secure: false, // must be false for port 587 (STARTTLS)
-  auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-  tls: {
-    rejectUnauthorized: false, // required on some cloud providers (Render, Railway, etc.)
-  },
-  connectionTimeout: 30000, // 30 seconds for cold starts
-  greetingTimeout: 30000,
-  socketTimeout: 30000,
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Lazy transporter — created fresh per send to avoid stale connections on Render
-const transporter = createTransporter();
-
-transporter.verify((error) => {
-  if (error) {
-    console.log('📧 SMTP Connection Error:', error.message);
-  } else {
-    console.log('📧 SMTP Server is ready to take our messages');
-  }
-});
+// The "from" address must be a verified domain on Resend.
+// Until you verify a custom domain, use Resend's shared domain:
+//   onboarding@resend.dev  (only sends to the account owner's email)
+// Once you verify your domain (e.g. hrms.yourdomain.com), change this to:
+//   "HRMS Admin" <noreply@yourdomain.com>
+const FROM_ADDRESS = process.env.EMAIL_FROM || 'HRMS Admin <onboarding@resend.dev>';
 
 const sendResetLink = async (to, token) => {
   const link = `${process.env.FRONTEND_URL}/set-password?token=${token}`;
-  await createTransporter().sendMail({
-    from: `"HRMS Admin" <${process.env.SMTP_USER}>`,
+  const { data, error } = await resend.emails.send({
+    from: FROM_ADDRESS,
     to,
     subject: 'Set Your HRMS Account Password',
     html: `
@@ -38,12 +23,13 @@ const sendResetLink = async (to, token) => {
         <p style="color:#888;font-size:12px;margin-top:20px">This link expires in 24 hours.</p>
       </div>`,
   });
-  console.log(`📧 Reset link sent to ${to}: ${link}`);
+  if (error) throw new Error(`Resend error: ${error.message}`);
+  console.log(`📧 Reset link sent to ${to}: ${link} (id: ${data.id})`);
 };
 
 const sendOTPEmail = async (to, otp) => {
-  await createTransporter().sendMail({
-    from: `"HRMS Admin" <${process.env.SMTP_USER}>`,
+  const { data, error } = await resend.emails.send({
+    from: FROM_ADDRESS,
     to,
     subject: 'Password Reset OTP - HRMS',
     html: `
@@ -57,20 +43,19 @@ const sendOTPEmail = async (to, otp) => {
         <p style="color:#888;font-size:12px">If you didn't request this, please ignore this email.</p>
       </div>`,
   });
-  console.log(`📧 OTP sent to ${to}: ${otp}`);
+  if (error) throw new Error(`Resend error: ${error.message}`);
+  console.log(`📧 OTP sent to ${to}: ${otp} (id: ${data.id})`);
 };
 
 const sendActivationEmail = async (to, activationToken) => {
-  // Use different URLs for development and production
-  const isDevelopment = process.env.NODE_ENV === 'development';
-  const baseUrl = isDevelopment 
-    ? 'http://localhost:3000' 
-    : (process.env.FRONTEND_URL || 'https://hr-managment-system-frontend.vercel.app');
-  
+  const baseUrl = process.env.NODE_ENV === 'development'
+    ? 'http://localhost:3000'
+    : (process.env.FRONTEND_URL || 'https://oicethiopiahrms.vercel.app');
+
   const link = `${baseUrl}/activate?token=${activationToken}`;
-  
-  await createTransporter().sendMail({
-    from: `"HRMS Admin" <${process.env.SMTP_USER}>`,
+
+  const { data, error } = await resend.emails.send({
+    from: FROM_ADDRESS,
     to,
     subject: 'Activate Your HRMS Account',
     html: `
@@ -79,19 +64,19 @@ const sendActivationEmail = async (to, activationToken) => {
         <p>Your administrator account has been created. Please click the button below to activate your account.</p>
         <a href="${link}" style="display:inline-block;padding:12px 24px;background:#6366f1;color:#fff;border-radius:6px;text-decoration:none">Activate Account</a>
         <p style="color:#888;font-size:12px;margin-top:20px">This activation link expires in 24 hours.</p>
-        <p style="color:#888;font-size:12px">Environment: ${isDevelopment ? 'Development' : 'Production'}</p>
         <p style="color:#888;font-size:12px">If you didn't request this, please ignore this email.</p>
       </div>`,
   });
-  console.log(`📧 Activation email sent to ${to}: ${link}`);
+  if (error) throw new Error(`Resend error: ${error.message}`);
+  console.log(`📧 Activation email sent to ${to}: ${link} (id: ${data.id})`);
 };
 
 const sendLeaveStatusEmail = async (to, employeeName, status, leaveDetails) => {
   const statusColor = status === 'Approved' ? '#22c55e' : '#ef4444';
   const statusIcon = status === 'Approved' ? '✅' : '❌';
-  
-  await createTransporter().sendMail({
-    from: `"HRMS Admin" <${process.env.SMTP_USER}>`,
+
+  const { data, error } = await resend.emails.send({
+    from: FROM_ADDRESS,
     to,
     subject: `Leave Request ${status} - HRMS`,
     html: `
@@ -112,7 +97,8 @@ const sendLeaveStatusEmail = async (to, employeeName, status, leaveDetails) => {
         <p style="color:#888;font-size:12px">This is an automated notification from the HRMS system.</p>
       </div>`,
   });
-  console.log(`📧 Leave status email sent to ${to}: ${status}`);
+  if (error) throw new Error(`Resend error: ${error.message}`);
+  console.log(`📧 Leave status email sent to ${to}: ${status} (id: ${data.id})`);
 };
 
 module.exports = { sendResetLink, sendOTPEmail, sendActivationEmail, sendLeaveStatusEmail };
