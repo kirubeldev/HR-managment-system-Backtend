@@ -7,7 +7,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 //   onboarding@resend.dev  (only sends to the account owner's email)
 // Once you verify your domain (e.g. hrms.yourdomain.com), change this to:
 //   "HRMS Admin" <noreply@yourdomain.com>
-const FROM_ADDRESS = process.env.EMAIL_FROM || 'HRMS Admin <onboarding@resend.dev>';
+const FROM_ADDRESS = process.env.EMAIL_FROM || 'HRMS Admin <noreply@oic-ethiopia.org>';
 
 const sendResetLink = async (to, token) => {
   const link = `${process.env.FRONTEND_URL}/set-password?token=${token}`;
